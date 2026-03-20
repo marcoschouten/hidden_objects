@@ -1,0 +1,429 @@
+
+\section{Dataset Quality}
+\label{sec:experiments}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\linewidth]{img/fig5_ranker.jpg}
+    \caption{
+ \textbf{Verifier Comparison.} For each verifier, we display the inpainting generation of the highest-scoring location.CLIP Score often prefers insertions irrespective of global scene context. 
+ In contrast, Image and Vision Reward outperform slightly aesthetic score for judging realism and semantic coherence, providing more accurate spatial priors.
+    }
+    \label{fig:ranker_comparison}
+\end{figure}
+
+We evaluate our diffusion-based spatial prior extraction pipeline along four axes: Sec.~\ref{sec:key_component_selection} pipeline component selection; Sec.~\ref{sec:4.3} downstream image editing quality and human alignment; Sec.~\ref{sec:biases} dataset bias analysis; and Sec.~\ref{sec:model_distillation} distillation into a fast context-aware placement model. We report both quantitative metrics and qualitative analyses to assess realism and robustness.  
+
+\subsection{Key Component Selection}
+\label{sec:key_component_selection}
+Here, we support the selection of the two of the main components of our framework, namely the inpainter and the ranker. 
+
+\mypar{Experimental Setup.} We use the OPA dataset~\cite{liu2021opa} since it is the only one to contain human annotation for both positive and negative placements. We select 464 entries (background, foreground object class). We run our full pipeline on these background images and collect our 1004 location annotations (both valid, and not valid). For each OPA annotation, we match it to the closest proposals of our pipeline, measured by IoU.
+
+% write logic of why ranker first 
+% write logic of why these rankers
+
+%%% @yannis, this is a common evaluaton protocol, we could avoid repeating it for inpainter and verifier
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\linewidth]{img/fig4_inpainters_v3.jpg}
+    \caption{
+\textbf{Inpainter Comparison.} We compare cross-attention-based inpainters with ControlNet-based variants. Cross-attention-based inpainters are prone to inpainting aberrations (i) or inpainting irrespective of scene semantics (ii). While ControlNet-based methods more reliably enforce scene constraints: they either abstain from implausible insertions (iii) or generate semantically coherent, context-aware objects (valid).
+    }
+    \label{fig:inpainter_comparison}
+\end{figure}
+
+%%%%%%%%% old
+
+\begin{table}[!t]
+    \centering
+    \small
+    \setlength{\tabcolsep}{2pt}
+    \caption{\textbf{Component Analysis.} We measure inpainting and ImageReward performance on OPA-ABLATION-SET. \textbf{(Left)} We evaluate different rankers for the same inpainter FLUX. \textbf{(Right)} We evaluate different inpainters for the same Ranker.
+    ImageReward and Qwen perform best. IR: ImageReward, CN: ControlNet.}
+    \label{tab:inpainter_verifier_f1}
+    \vspace{-0.8em}
+    \resizebox{\linewidth}{!}{
+        \begin{minipage}[t]{0.48\linewidth}
+            \centering
+            \begin{tabular}{llc}
+                \toprule
+                \textbf{Inpainter} & \textbf{Ranker} & \textbf{AP} $\uparrow$ \\
+                \midrule
+                FLUX & Random & 52.8 \\
+                FLUX & Aesthetics & 52.6 \\
+                FLUX & CLIP Score & 53.8 \\
+               \rowcolor{gray!15}   FLUX & \textbf{ImageReward} & \textbf{57.1} \\
+                \bottomrule
+            \end{tabular}
+        \end{minipage}
+        \hfill
+        \begin{minipage}[t]{0.51\linewidth}
+            \centering
+            \begin{tabular}{lll}
+                \toprule
+                \textbf{Inpainter} & \textbf{Ranker} & \textbf{F1} $\uparrow$ \\
+                \midrule
+                SD & ImageReward & 52.6 \\
+                SD + CN & ImageReward & 49.8 \\
+                FLUX & ImageReward & 48.5 \\
+                FLUX + CN & ImageReward & 40.1 \\
+              \rowcolor{gray!15}    \textbf{Qwen + CN} & ImageReward & \textbf{53.5} \\
+                \bottomrule
+            \end{tabular}
+        \end{minipage}
+    }
+    \vspace{-1em}
+\end{table}
+\mypar{Ranker.} As candidates for measuring human preference we compare different rankers ImageReward~\cite{xu2023imagereward}, Aesthetic Score~\cite{aestheticpredictor2024}, CLIP Score~\cite{hessel2021clipscore}, and VisionReward~\cite{xu2025visionrewardfinegrainedmultidimensionalhuman}. For a fair comparison, we fix the inpainter for all of them, and we use FLUX~\cite{batifol2025flux}.
+In Fig.~\ref{fig:ranker_comparison}, we see that ImageReward and VisionReward better capture contextual realism, while CLIP prioritizes object class fidelity within the bounding box while neglecting global scene consistency, often failing to penalize implausible placements. In Tab.~\ref{tab:inpainter_verifier_f1} we evaluate each ranker’s ability to prioritize valid over invalid locations using Average Precision (AP). ImageReward achieves the highest AP (57.1), outperforming CLIP Score and Aesthetics. These results indicate that ImageReward aligns more closely with human judgments of plausible object placement. 
+% Consequently, we adopt ImageReward as the ranker for our inpainter.
+
+\mypar{Inpainter.} We evaluate different inpainters based on U-Net based diffusion (SDXL~\cite{podell2023sdxl}) and DiT flow-matching backbones (FLUX~\cite{batifol2025flux}, Qwen-Image \cite{wu2025qwen}), alongside the addition of ControlNet~\cite{zhang2023adding} (denoted CN). 
+Fig.~\ref{fig:inpainter_comparison} shows that standard inpainters tend to fill the masked region with foreground content regardless of surrounding scene semantics, e.g. in the case of SDXL~\cite{podell2023sdxl} and FLUX~\cite{batifol2025flux} often placing objects floating in the sky. Inversely, controlnet-based inpainters produced placements that more consistent with scene depth and structure, matching perspective constraints and refusing impossible placements. In terms of ImageReward, we can see that Qwen+CN achieves the highest F1-score (53.5), for which we select it for our future experiments.
+
+
+
+
+% To produce a realistic and reliable image prior, we carefully select the Inpainter and Verifier. In addition to qualitative inspection, we conduct a quantitative ablation (Table~\ref{tab:inpainter_verifier_f1}) on 464 manually annotated positive and negative samples from OPA. Finally, since diffusion sampling is computationally intensive, we employ a speedup strategy for the data creation pipeline. \dimpp{the setip is not clear. write it explicitly. We run our pipeline on the OPA background images. We obtain this. We call this X for the remainder of the paper. We compare this with this.}
+
+% \mypar{Inpainter.} 
+% We summarize qualitative comparisons of different inpainters in Fig.~\ref{fig:inpainter_comparison}. We evaluate two classes of approaches: cross-attention-based~\cite{ye2023ip} and ControlNet-based architectures~\cite{zhang2023adding}. Cross-attention-based inpainters tend to fill the masked region with foreground content largely independent of surrounding scene semantics, which is undesirable for spatial prior distillation. For instance, SDXL~\cite{podell2023sdxl} and FLUX~\cite{batifol2025flux} often inpaint objects despite physically implausible requests, leading to floating instances or unrealistic scales.
+
+% In contrast, ControlNet-based models exhibit stronger geometric and semantic conditioning. The generated objects better integrate with scene layout, and the models frequently refuse unreasonable insertions. We further compare U–Net–based diffusion (SDXL~\cite{podell2023sdxl}) with multimodal DiT flow-matching backbones, Qwen~\cite{wu2025qwen} and Flux~\cite{batifol2025flux}. MM-DiT models produce placements that more consistently respect scene depth and structure, either abstaining from implausible insertions or adapting object size and orientation to match perspective constraints. ControlNet-based inpainters also demonstrate an emergent ability to reject invalid requests in two modes:  near-identity outputs with no detectable insertion, or semantically incoherent completions. Both behaviors are reliably filtered by our verifier (See Fig.~\ref{fig:inpainter_comparison}.
+
+% Quantitatively, we isolate the inpainter by fixing the ranker and report F1 scores measuring how often a valid object is successfully generated and detected within the target box. Qwen + ControlNet achieves the highest F1 (53.5), outperforming SD, FLUX, and their ControlNet variants. This confirms that Qwen + CN produces context-consistent objects that are both semantically valid and geometrically plausible. Based on these results, we select Qwen + ControlNet as our inpainter. \dimpp{point to the table}
+
+% \mypar{Verifier.} 
+% Our verifier consists of an open-set detector and a ranker. We adopt Grounded-SAM-2~\cite{ren2024grounded} as the detector. The ranker assigns a scalar score reflecting alignment between the generated image and the textual prompt, serving as a proxy for human preference over physical plausibility and semantic coherence.
+
+% We compare ImageReward~\cite{xu2023imagereward}, Aesthetic Score~\cite{aestheticpredictor2024}, CLIP Score~\cite{hessel2021clipscore}, and VisionReward~\cite{xu2025visionrewardfinegrainedmultidimensionalhuman}. Qualitatively (Fig.~\ref{fig:ranker_comparison}), CLIP Score prioritize object class fidelity within the bounding box while neglecting global scene consistency, often failing to penalize implausible placements. ImageReward and VisionReward better capture contextual realism and yield cleaner spatial priors.
+
+% Quantitatively, we evaluate each ranker’s ability to prioritize valid over invalid locations using Average Precision (AP). ImageReward achieves the highest AP (57.1), outperforming CLIP and Aesthetics. These results indicate that ImageReward aligns more closely with human judgments of plausible object placement. Consequently, we adopt ImageReward as the ranker in our verifier.
+
+
+%%%%%%%%%%%%%%%%%  
+
+\subsection{Image Editing Performance}
+\label{sec:4.2}
+% fix
+
+\begin{table}[!t]
+\centering
+\caption{\textbf{Downstream image editing quality} evaluated by ImgEdit-Judge~\cite{ye2025imgedit} (1-5). We compare our annotation pipeline against various placement strategies.}
+\label{tab:downstream_imgedit}
+\begin{small}
+\begin{tabular}{@{}llcccc@{}}
+\toprule
+Method & Test set & PC $\uparrow$ & VN $\uparrow$ & PDC $\uparrow$ & Avg $\uparrow$ \\
+\midrule
+Raw background & \textsc{HiddenObjects} & 1.04 & 1.03 & 1.03 & 1.04 \\
+Full Mask & \textsc{HiddenObjects} & 1.62 & 1.60 & 1.59 & 1.60 \\
+Random Bounding Box & \textsc{HiddenObjects} & {2.73} & {2.62} & {2.62} & {2.65} \\
+\rowcolor[HTML]{F2F2F2}  \textbf{Ours (Annotation Pipeline)} & \textsc{HiddenObjects} & \textbf{3.83} & \textbf{3.63} & \textbf{3.63} & \textbf{3.69} \\
+\midrule
+Raw background & \textsc{OPA} & 1.00 & 1.00 & 1.00 & 1.00 \\
+Full Mask & \textsc{OPA} & 1.66 & 1.66 & 1.66 & 1.66 \\
+Human Annotation & \textsc{OPA} & 2.72 & 2.66 & 2.66 & 2.68 \\
+Random Bounding Box & \textsc{OPA} & 2.97 & 2.84 & 2.84 & 2.89 \\
+\rowcolor[HTML]{F2F2F2}  \textbf{Ours (Annotation Pipeline)} & \textsc{OPA} & \textbf{4.05} & \textbf{3.83} & \textbf{3.83} & \textbf{3.90} \\
+\bottomrule
+\end{tabular}
+\end{small}
+\end{table}
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=\linewidth]{img/fig_qualitative_eccv.pdf}
+\caption{
+\textbf{Image inpainting with object placement priors.}
+We evaluate four object placement approaches on the \textsc{OPA}~\cite{liu2021opa} and
+\textsc{HiddenObjects} backgrounds.
+\emph{Full Mask} inpaints the entire image.
+\emph{Human Annot.}\ uses ground-truths from OPA.
+\emph{Random BBox} samples a uniformly random placement region, serving as a
+controlled baseline.
+\emph{Ours} uses the top-ranked box of our dataset.
+Dashed boxes show the inpainting region
+(\textcolor[HTML]{00BFFF}{HiddenObject annotation (ours)},
+ \textcolor[HTML]{FF8C00}{OPA annotation},
+ \textcolor[HTML]{CC44CC}{Random}).
+Corner scores are ImgEdit-Judge~\cite{ye2025imgedit}.
+Our pipeline consistently produces well-placed, photorealistic composites
+across object classes and image scenes, outperforming sparse human placement.
+}
+    \label{fig:qualitative_imgedit}
+\end{figure}
+
+A strong spatial prior should not only identify plausible locations but also actively guide inpainting models to produce photorealistic, human-aligned image composites. To evaluate the utility of our extracted spatial priors, we measure their performance on the downstream task of object insertion. 
+
+\mypar{Evaluation Setup}. We evaluate object placement in both OPA and \textsc{HiddenObject}. For fair comparison, we take a subset of backgrounds that have the same 29 shared COCO classes. We focus on the test set, and after filtering, we select 200 random images from \textsc{HiddenObject} and all 76 OPA images. We use Qwen+CN~\cite{wu2025qwen,qwencn} for all our inpaintings. To test image editing performance we use the common benchmark of ImgEdit-Judge~\cite{ye2025imgedit} which relies on Qwen2.5-VL which evaluates placement quality giving a score between 1-5 by averaging the score of three different axes: Prompt Compliance (PC), Visual Naturalness (VN), and Physical and Detail Coherence (PDC).
+%
+
+\mypar{Quantitative Analysis.} In Tab.~\ref{tab:downstream_imgedit}, we compare our inpainting performance on both test-sets using three different baselines: no edit, full-image covering the whole image space; random mask uniformly sampled inside 10\% to 90\% of image size, and aspect ratio between 0.25 to 4. In OPA, we also compare with inpainting on the ground truth human annotation. Our method outperforms all baselines including opa human annotation (3.90 vs. 2.68 on average). This clarifies that human annotation of object placement locations is inherently ambiguous, which is why human annotation yields similar performance to random proposals. 
+
+\mypar{Qualitative Verification.} Seeing qualitative results in Fig.~\ref{fig:qualitative_imgedit} we can verify the above observations. Full mask fully changes the original background, producing unrealistic composition. Random box, is bit better anchoring to specific region and scale, keeping the background realistic but producing no or unrealistic inpainting. More importantly, human annotations often fail to producing correct inpaintings, because the masks are too large and poorly placed as is the case with the cake in the second line or the elephant on the bottom.
+
+% We conclude that our pipeline predicts boudin boxes that align better with perseptiv enad compositioanl tendendies of diffsin based inpainting models, resulting in more resulting in more seamless blending(See Fig.\ref{fig:qualitative_imgedit}). thus validating the quality of our data.
+
+% We run an inpainting pipeline with three inputs: background image and bounding box and the class. We use qwen-inpainting-controlnet as the inpainter.  
+% We  changing only the input bounding box.
+% On the HiddenOBJECTS set we compare our top1 annotation ranked highest by the ranker (image reward), a full-mask, and a random mask. 
+
+% \subsection{Data Quality - Human Alignment - (ImgEdit judge eval)}
+% \label{sec:4.3}
+
+
+% \begin{figure}[t]
+%     \centering
+%     \includegraphics[width=\linewidth]{img/fig_qualitative_eccv_compressed.pdf}
+% \caption{
+% \textbf{Qualitative comparison of object placement priors for image inpainting.}
+% We evaluate four placement strategies on the \textsc{OPA}~\cite{liu2021opa} and
+% \textsc{HiddenObjects} benchmarks using the ControlNet inpainting pipeline~\cite{zhang2023adding}.
+% \emph{Full Mask} inpaints the entire image without spatial guidance.
+% \emph{Human Annot.}\ uses ground-truth OPA placement bounding boxes.
+% \emph{Random BBox} samples a uniformly random placement region, serving as a
+% controlled baseline that isolates annotation quality from pipeline choice.
+% \emph{Ours} uses bounding boxes predicted by our annotation pipeline, distilled
+% from a diffusion-based background suitability scorer.
+% Dashed boxes indicate the placement region provided to the inpainting model
+% (\textcolor[HTML]{00BFFF}{cyan}: ours / HiddenObject annotation,
+%  \textcolor[HTML]{FF8C00}{orange}: OPA human annotation,
+%  \textcolor[HTML]{CC44CC}{purple}: random).
+% Corner scores are ImgEdit-Judge~\cite{shi2025imgedit} averages (1--5,
+% \textbf{higher is better}).
+% Our pipeline consistently produces well-placed, photorealistic composites
+% across all object categories and background scenes, outperforming human placement.
+% }
+%     \label{fig:distribution_of_boxes}
+% \end{figure}
+
+
+% \begin{table}[t]
+% \centering
+% \caption{\textbf{Downstream image editing quality} evaluated by ImgEdit-Judge~\cite{ye2025imgedit} (Qwen2.5 1--5 scale). We compare our annotation pipeline against various placement strategies.}
+% \label{tab:downstream_imgedit}
+% \begin{small}
+% \begin{tabular}{@{}llcccc@{}}
+% \toprule
+% Method & Benchmark & PC $\uparrow$ & VN $\uparrow$ & PDC $\uparrow$ & Avg $\uparrow$ \\
+% \midrule
+% Raw background & \textsc{HiddenObjects} & 1.04 & 1.03 & 1.03 & 1.04 \\
+% Full Mask & \textsc{HiddenObjects} & 1.62 & 1.60 & 1.59 & 1.60 \\
+% Random Bounding Box & \textsc{HiddenObjects} & {2.73} & {2.62} & {2.62} & {2.65} \\
+% \rowcolor[HTML]{F2F2F2}  \textbf{Ours (Annotation Pipeline)} & \textsc{HiddenObjects} & \textbf{3.83} & \textbf{3.63} & \textbf{3.63} & \textbf{3.69} \\
+% \midrule
+% Raw background & \textsc{OPA} & 1.00 & 1.00 & 1.00 & 1.00 \\
+% Full Mask & \textsc{OPA} & 1.66 & 1.66 & 1.66 & 1.66 \\
+% Human Annotation & \textsc{OPA} & 2.72 & 2.66 & 2.66 & 2.68 \\
+% Random Bounding Box & \textsc{OPA} & 2.97 & 2.84 & 2.84 & 2.89 \\
+% \rowcolor[HTML]{F2F2F2}  \textbf{Ours (Annotation Pipeline)} & \textsc{OPA} & \textbf{4.05} & \textbf{3.83} & \textbf{3.83} & \textbf{3.90} \\
+% \bottomrule
+% \end{tabular}
+% \end{small}
+% \end{table}
+
+
+
+\subsection{Systematic Biases analysis}
+\label{sec:4.3}
+\label{sec:biases}
+\begin{figure}[t]
+    \centering
+    % Set a specific height, like 4cm or 0.2\textheight
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[height=3.5cm]{img/fig_bias_a_heatmaps_2rows.pdf} 
+        \caption{Distribution of Object  Center }
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[height=3.5cm]{img/fig_bias_b_size.pdf}
+        \caption{Scale Density}
+    \end{subfigure}
+    \caption{\textbf{Analysis of Spatial and Scale Distributions.} 
+    \textit{(a) Object center distributions across datasets.} While traditional benchmarks like COCO~\cite{lin2014microsoft}, VOC~\cite{pascal-voc-2012}, and ImageNet~\cite{imagenet} exhibit a pronounced center-crop bias, our pipeline (evaluated on HiddenObjects and OPA backgrounds) yields a more diffuse distribution with higher spatial variance. 
+    \textit{(b) Scale Density:} Bounding box area distributions. Our approach and PIPE~\cite{wasserman2024paint} exhibit a density drop for small objects (0.01\%--0.1\% image area), revealing a shared bottleneck: the resolution limits of underlying diffusion backbones in generating or removing object at small scales.} 
+        \label{fig:distribution_of_boxes}
+\end{figure}
+
+A fundamental challenge in object placement is that training datasets encode strong spatial and scale biases that models inevitably internalize. While our extracted spatial priors successfully capture human-aligned placement expectations, they are also likely to inherit systematic biases from the training dataset of both the used diffusion models and verifier. To this end, in this section we clarify how does our distribution compare to that of common object detection datasets such as COCO~\cite{lin2014microsoft}, VOC 2012~\cite{pascal-voc-2012}, ADE20K~\cite{zhou2019semantic}, ImageNet-Det~\cite{imagenet} or other object placement datasets such as PIPE~\cite{wasserman2024paint}, OPA~\cite{liu2021opa}.
+% 
+
+\mypar{Distribution of Object Centers.} 
+In Fig.~\ref{fig:distribution_of_boxes}a, we visualize the average distribution of center bbox coordinates (similar to~\cite{gupta2019lvis}). Standard datasets, such as COCO~\cite{lin2014microsoft}, VOC 2012~\cite{pascal-voc-2012}, PIPE~\cite{wasserman2024paint}, and ImageNet-Det~\cite{pascal-voc-2012}, exhibit a pronounced center bias, concentrating object placements in a tight cluster around the image center. This is a well-known bias of how photographers naturally frame subjects. In contrast, our dataset displays the most spatially uniform spatial distribution, in comparison to both object placement datasets and object-centric recognition datasets. Still, unlike ADE20k, our spatial prior distribution closely reflects the aesthetic composition habits present in the large-scale web image datasets used to train diffusion models. For example, as seen in Fig.~\ref{fig:cherry_picked_dataset}, while a bench could physically be placed anywhere on the ground, the aggregated prior exhibits a strong bottom-center bias.
+
+% Similarly, objects like kites or airplanes display a pronounced top-center bias (See Fig.~\ref{fig:cherry_picked_dataset}).
+
+\mypar{Distribution of Object Scale.}
+The object size distribution (Fig.~\ref{fig:distribution_of_boxes}b) reveals an equally important divergence. Older object-centric datasets (VOC~\cite{pascal-voc-2012} and Imagenet-Det~\cite{pascal-voc-2012}) are dominated by prominently large objects occupying 10–100\% of the image area. In contrast, our pipeline concentrates on smaller relative sizes (1–10\%), which is more consistent with the realistic placement of objects within complex scenes. Despite this shift toward realistic scales, the extracted priors still exhibit a bias toward medium-to-large bounding boxes. This stems from an intrinsic limitation of current diffusion models, which struggle to produce high-fidelity inpaintings when constrained to regions with very few pixels. Crucially, this resolution limit directly translates into a perspective bias. In high-depth scenes, due to perspective scene geometry, objects placed closer to the vanishing point must occupy a smaller pixel footprint. These small-scale generation attempts reliably yield low-quality completions that fail to pass the verifier's detection thresholds, resulting in a sparsity of background placements.
+
+\subsection{Model Distillation for Object Placement}
+\label{sec:model_distillation}
+
+To quickly infer placement proposals on unseen images for downstream applications, we distill our extracted spatial priors into a lightweight model.
+
+\begin{table}[t]
+\centering
+\caption{Comparison of object placement baselines on the \textsc{HiddenObject} test set. Our baseline distilled model outperforms zero-shot VLMs and other methods for object placement trained on OPA.}
+\label{tab:baseline_comparison}
+\begin{tabular}{llrrrrr}
+\toprule
+\textbf{Method} & \textbf{Train Set} & \textbf{mAP} & \textbf{IoU50@1} & \textbf{IoU@1} & \textbf{IoU50@5} & \textbf{IoU@5} \\
+ & & (\%) & (\%) & (\%) & (\%) & (\%) \\
+\midrule
+Qwen2.5-VL-72B     & \textsc{Zero-shot} & 1.3  & 7.9  & 14.0 & 12.7 & 18.8 \\
+Qwen2.5-VL-7B      & \textsc{Zero-shot} & 1.4  & 8.6  & 13.9 & 10.1 & 16.5 \\
+InternVL3-8B       & \textsc{Zero-shot} & 0.3  & 3.3  & 11.2 & 9.2  & 18.7 \\
+LLaVA-OneVision-7B & \textsc{Zero-shot} & 1.0  & 11.7 & 20.9 & 16.3 & 24.7 \\
+LLaVA-1.5-7B       & \textsc{Zero-shot} & 1.0  & 6.4  & 17.0 & 8.8  & 22.8 \\
+LLaVA-1.5-13B      & \textsc{Zero-shot} & 1.2  & 6.4  & 14.0 & 7.5  & 15.6 \\
+\midrule
+BootPlace~\cite{zhou2025bootplace}    & \textsc{Cityscapes}           & 0.1  & 0.9  & 6.0  & 0.9  & 6.0  \\
+TerseNet~\cite{tripathi2019learning}  &   \textsc{OPA}        & 1.4  & 20.9 & 29.5 & 20.9 & 29.5 \\
+GracoNet~\cite{zhou2022learning}      &  \textsc{OPA}        & 2.1  & 23.7 & 35.9 & 23.7 & 35.9 \\
+PlaceNet~\cite{zhang2020learning}     &   \textsc{OPA}        & 2.9  & 43.5 & 42.4 & 43.5 & 42.4 \\
+Ours                                  & \textsc{OPA}       & 28.0 & 36.4 & 33.0 & 51.9 & 57.6 \\
+\rowcolor{gray!15}
+Ours                                  & \textsc{HiddenObject} & \textbf{56.6} & \textbf{62.9} & \textbf{55.2} & \textbf{79.1} & \textbf{67.7} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% wer diont;' 
+
+\mypar{Architecture.} We formulate object placement as a multi-class, closed-set prediction task. We extract multi-scale visual features of background scenes using a frozen ResNet-50 backbone. These features are processed by a DETR-style Transformer encoder-decoder. The encoder consists of 6 layers, while the decoder utilizes 50 object-conditioned learnable queries per image, formed by adding query offsets to the embedded target class. For the final predictions, we use a 3-layer MLP bounding box head that regresses normalized coordinates, and a 2-layer MLP plausibility head that predicts the ImageReward. We train with a multi-target Hungarian matching with a regression loss (L1 + GIoU) explicitly weighted by the normalized reward scores. To ensure high-quality supervision, we use the top 20 bounding boxes of our prior. We optimize using AdamW with a learning rate of $1\mathrm{e}{-4}$, a weight decay of $1\mathrm{e}{-4}$, and clip gradients with a norm higher than $0.1$. We train at a batch size of 128 for maximum 200 epochs using early stopping with a patience of 15 epochs. 
+% \textit{Loss} supervision is based on multi-target Hungarian matching. A bipartite assignment between predicted and ground-truth boxes is computed via linear sum assignment using a cost matrix defined by a weighted combination of L1 distance and Generalized IoU. After matching, the regression loss is computed as a weighted sum of L1 and GIoU losses. Each matched ground-truth box is weighted by its normalized human-preference reward score. The plausibility head is supervised with a Mean Squared Error loss, trained to predict the maximum GIoU achieved between each query and the ground-truth boxes. 
+
+\mypar{Experimental Setup.} We evaluate our model in both OPA and \textsc{HiddenObjects}. For fair cross-dataset evaluation, we use the subset of \textsc{HiddenObjects} that contains the 28 shared foreground object classes across existing placement. This results in 9,438 train and 504 test (565,948  location annotations). We also train on the subset of OPA that has the same 28 shared classes of 958 train set. We measure performance of bbox proposals using Intersection over Union (IoU) and Mean Average Precision (mAP). We also measure IoU50 accuracy where predictions achieving a maximum IoU $\geq 0.50$ against ground-truth are considered positive hits).
+
+\mypar{Evaluation.} We benchmark our distilled model against state-of-the-art generalist VLMs (including Qwen2.5-VL-72B\cite{bai2025qwen25vltechnicalreport}, InternVL3-8B~\cite{chen2024internvl}, and LLaVA-1.5~\cite{liu2024improved}) and the dedicated off-the-shelf object placement models PlaceNet~\cite{zhang2020learning}, GracoNet~\cite{zhou2022learning}, TerseNet~\cite{tripathi2019learning} and BootPlace~\cite{zhou2025bootplace}. In Tab.~\ref{tab:baseline_comparison}, we observe that zero-shot VLMs fail (peak around 1.4\% mAP), and existing placement models struggle beyond top-1 localization as they have only been trained on sparse spatial priors. In contrast, our model performs best with 56.6\% mAP and 62.9\% IoU50@1. 
+%In Tab.~\ref{tab:results_opa_short}, we also evaluate the model's performance in object insertion similar to Sec.~\ref{sec:4.2}. 
+Similar to Sec.~\ref{sec:4.2}, we also evaluate the model's performance in object insertion (Tab.~\ref{tab:results_opa_short}). 
+Our model trained on \textsc{HiddenObject} performs still better than OPA Human Annotation and the model trained on OPA, thus proving that our distillation process can yield high quality bounding box proposal. 
+
+% These results confirm that distilling dense, reward-weighted spatial priors enables the learning of robust, context-aware placement distributions that outperform models relying on single-box sparse annotations or generalized visual pre-training.
+
+\mypar{Inference Time.} To justify distillation, we report measurements on an H100 GPU. The distilled model achieves a latency of 3.77 ms/image on average tested on 100 images with 188.9 MB peak GPU memory. Compared to 14.49 minutes/image and 65.9 GB for the full pipeline, this yields a 230,000$\times$ speedup and 300$\times$ memory reduction.
+
+
+% \begin{table}[t]
+% \centering
+% \caption{Comparison of object placement baselines on the HO test set (\%). }
+% \label{tab:baseline_comparison}
+% \begin{tabular}{lrrrrr}
+% \toprule
+% \textbf{Method} & mAP & IoU50@1 & IoU@1 & IoU50@5 & IoU@5 \\
+%  & (\%) & (\%) & (\%) & (\%) & (\%) \\
+% \midrule
+% Qwen2.5-VL-72B & 1.3 & 7.9 & 14.0 & 12.7 & 18.8 \\
+% Qwen2.5-VL-7B & 1.4 & 8.6 & 13.9 & 10.1 & 16.5 \\
+% InternVL3-8B & 0.3 & 3.3 & 11.2 & 9.2 & 18.7 \\
+% LLaVA-OneVision-7B & 1.0 & 11.7 & 20.9 & 16.3 & 24.7 \\
+% LLaVA-1.5-7B & 1.0 & 6.4 & 17.0 & 8.8 & 22.8 \\
+% LLaVA-1.5-13B & 1.2 & 6.4 & 14.0 & 7.5 & 15.6 \\
+% \midrule
+
+% BootPlace~\cite{zhou2025bootplace} & 0.1 & 0.9 & 6.0 & 0.9 & 6.0 \\
+% TerseNet~\cite{tripathi2019learning} & 1.4 & 20.9 & 29.5 & 20.9 & 29.5 \\
+% GracoNet~\cite{zhou2022learning} & 2.1 & 23.7 & 35.9 & 23.7 & 35.9 \\
+% PlaceNet~\cite{zhang2020learning} & 2.9 & 43.5 & 42.4 & 43.5 & 42.4 \\
+% Ours (train \textsc{OPA})  & 28.0 & 36.4 & 33.0 & 51.9 & 57.6\\
+% \rowcolor{gray!15}
+% Ours (train \textsc{HiddenObject}) & \textbf{56.6} & \textbf{62.9} & \textbf{55.2} & \textbf{79.1} & \textbf{67.7} \\
+% \bottomrule
+% \end{tabular}
+% \end{table}
+
+\begin{table}[t]
+\label{tab:inpainting_performance}
+\centering
+\caption{We compare object insertions via ImgEdit-Judge based on location proposals generated from our model against human annotations. Our annotation pipeline outperforms human annotations and also a model trained on OPA.}
+\label{tab:results_opa_short}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+\textbf{Method} & \textbf{PC. $\uparrow$} & \textbf{VN. $\uparrow$} & \textbf{PDC. $\uparrow$} & \textbf{Avg. $\uparrow$} & \textbf{N} \\ 
+\midrule
+OPA Human Annotation & 2.72 & 2.66 & 2.66 & 2.68 & 76 \\ 
+\midrule
+Ours (train on OPA) & 3.39 & 3.33 & 3.33 & 3.35 & 76 \\
+Ours (train \textsc{HiddenObject})  & 3.53 & 3.38 & 3.38 & 3.43 & 76 \\
+\textbf{Ours (Annotation Pipeline)} & \textbf{4.05} & \textbf{3.83} & \textbf{3.83} & \textbf{3.90} & 76 \\ 
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+
+
+% \begin{table}[t]
+% \centering
+% \caption{PlacementTransformer cross-dataset experiments (\%).}
+% \label{tab:transformer_experiments}
+% \begin{tabular}{llrrrrr}
+% \toprule
+% \textbf{Train} & \textbf{Test} & mAP & IoU@1 & IoU50@1 & IoU@5 & IoU50@5 \\
+%  & & (\%) & (\%) & (\%) & (\%) & (\%) \\
+% \midrule
+% OPA & HO & 28.0 & 36.4 & 33.0 & 51.9 & 57.6 \\
+%  & OPA & 36.5 & 46.5 & 54.4 & 57.1 & 64.6 \\
+%  & PIPE & 4.0 & 16.9 & 6.1 & 27.4 & 14.8 \\
+% HO & HO & \textbf{56.6} & 55.2 & 62.9 & 67.7 & 79.1 \\
+%  & OPA & 20.2 & 35.6 & 24.1 & 43.2 & 39.2 \\
+%  & PIPE & 4.4 & 17.9 & 6.1 & 26.5 & 14.4 \\
+% \rowcolor{gray!15}
+% HO (irany) & HO & — & \textbf{59.4} & \textbf{66.6} & \textbf{70.8} & \textbf{81.7} \\
+%  & OPA & — & 32.8 & 19.0 & 40.5 & 32.9 \\
+%  & PIPE & — & 17.9 & 4.9 & 26.8 & 12.2 \\
+% Combined & HO & 56.2 & 57.6 & 65.1 & 68.4 & 79.4 \\
+%  & OPA & 34.9 & 45.8 & 48.1 & 55.9 & 59.5 \\
+%  & PIPE & 4.6 & 19.2 & 7.6 & 28.2 & 14.4 \\
+% \bottomrule
+% \end{tabular}
+% \end{table}
+
+
+% \begin{table}[t]
+% \centering
+% \caption{\textbf{OPA Alignment Analysis.} Confusion matrix between OPA human labels and HO pipeline predictions across varying thresholds (\%). We match each OPA annotation to the closest of 1,004 HO pipeline proposals by IoU. Results are reported for the 456-sample OPA train set using \textbf{Direction A: Sample Annotation to Closest HO Proposal.}}
+% \label{tab:opa_alignment}
+% \begin{tabular}{@{}lccccccccc@{}}
+% \toprule
+% \textbf{Setting} & \textbf{N} & \textbf{TP} & \textbf{FP} & \textbf{TN} & \textbf{FN} & \textbf{Acc} & \textbf{Prec} & \textbf{Rec} & \textbf{F1} \\ \midrule
+% conf $> 0.40$ & 437 & 111 & 89 & 127 & 110 & 0.545 & 0.555 & 0.502 & 0.527 \\
+% conf $> 0.50$ & 437 & 91 & 64 & 152 & 130 & 0.556 & 0.587 & 0.412 & 0.484 \\
+% conf $> 0.60$ & 437 & 72 & 50 & 166 & 149 & 0.545 & 0.590 & 0.326 & 0.420 \\
+% conf $> 0.70$ & 437 & 50 & 33 & 183 & 171 & 0.533 & 0.602 & 0.226 & 0.329 \\
+% conf $> 0.80$ & 437 & 32 & 16 & 200 & 189 & 0.531 & 0.667 & 0.145 & 0.238 \\ \midrule
+% conf $> 0.40, \text{IR} > 0.0$ & 437 & 25 & 21 & 195 & 196 & 0.503 & 0.543 & 0.113 & 0.187 \\
+% conf $> 0.50, \text{IR} > 0.0$ & 437 & 25 & 17 & 199 & 196 & 0.513 & 0.595 & 0.113 & 0.190 \\
+% conf $> 0.60, \text{IR} > 0.0$ & 437 & 22 & 14 & 202 & 199 & 0.513 & 0.611 & 0.100 & 0.171 \\
+% conf $> 0.70, \text{IR} > 0.0$ & 437 & 17 & 11 & 205 & 204 & 0.508 & 0.607 & 0.077 & 0.137 \\
+% conf $> 0.80, \text{IR} > 0.0$ & 437 & 11 & 5 & 211 & 210 & 0.508 & 0.688 & 0.050 & 0.093 \\ \midrule
+% conf $> 0.40, \text{IR} > 0.5$ & 437 & 2 & 0 & 216 & 219 & 0.499 & 1.000 & 0.009 & 0.018 \\
+% conf $> 0.60, \text{IR} > 0.5$ & 437 & 2 & 0 & 216 & 219 & 0.499 & 1.000 & 0.009 & 0.018 \\ \midrule
+% conf $> 0.40, \text{IR} > 1.0$ & 437 & 0 & 0 & 216 & 221 & 0.494 & 0.000 & 0.000 & 0.000 \\
+% \bottomrule
+% \end{tabular}
+% \end{table}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

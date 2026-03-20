@@ -1,0 +1,124 @@
+\section{HiddenObjects Dataset}
+\label{sec:method}
+The main contribution of this work is a generative automatic pipeline to extract \textit{spatial priors} for object placement on real background images. In Sec.~\ref{framework}, we describe our framework, and, in Sec.~\ref{dataprep}, we discuss our dataset construction.
+
+% \marco{i would avoid using artifact-free asmuch as possible. ``The main contribution of this work is a generative automatic pipeline to extract "}
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=\linewidth]{img/fig3v3.pdf}
+    \caption{
+    \textbf{Spatial Prior Extraction.}
+    Given a background image $\mathbf{x}$, the inpainter $\mathcal{I}$ synthesizes an image $\mathbf{\hat{x}}$ for target class $c_j$ at a bounding box $\mathbf{b}_{i}$. The verifier $\mathcal{V}$ evaluates the inpainted images $\mathbf{\hat{x}}_{ij}$, yielding a detected bounding box and a human-preference score $r_{ij}$. Repeating this process across multiple sampled boxes yields the ground-truth spatial prior $S = \{(\mathbf{b}_{ij}, r_{ij})\}$ for i-th bounding box and j-th class. The heatmap visualizes the summed dense score distribution over spatial locations.
+    }
+    \label{fig:pipeline}
+\end{figure*}
+ 
+\subsection{Spatial Prior Extraction Framework}
+\label{framework}
+The construction of a spatial prior $\mathbf{S}(\mathbf{x},c)$ between a background image $x$ and an object $c$ can be broken down into three fundamental operations outlined in Fig.~\ref{fig:pipeline}. First, an inpainter $\mathcal{I}$ synthesizes class-consistent object insertions into a set of proposed regions. Secondly, a verifier $\mathcal{V}$ validates whether the inpainter added the target object in the proposed region. Third, for each verified insertion, a Ranker $\mathcal{R}$ quantifies the conditional preference to each insertion.
+
+\mypar{Spatial Prior.} In the context of our dataset, a spatial prior $\mathbf{S}(\mathbf{x}, c)$ for a given input image $\mathbf{x}\in \mathbb{R}^{H\times W\times 3}$ and a category $c_j\in \mathcal{C}$ is defined as a set:
+\begin{equation}
+\mathbf{S}(\mathbf{x},c) \equiv \{ (\mathbf{b_{i}}, r_{i}), i\in [0, N-1] \}
+\end{equation}
+where $r_{i} \in \mathbb{R}$ is the score of a corresponding bounding box $\mathbf{b_{i}}=(x_i,y_i,w_i,h_i)$, with box center $(x_i,y_i)$ and box size $(w_i,h_i)$ for a fixed set of $N$ boxes.  We define a deterministic set of boxes $\mathbf{b_i}$ produced by a sliding window of different resolutions which evenly span the whole image (more details in supplementary). For simplicity, we assume all images to be in the same resolution.
+
+% \marco{we do the center crop on all backgronds, is part of our dataset creation pipeline}
+
+
+
+\mypar{Inpainter.} The goal of the inpainter $\mathcal{I}$ is to produce a visual proposal at different locations in the input image. We denote the inpainting result:
+\begin{equation}
+\mathbf{\hat{x}}_{ij}\equiv \mathcal{I}(\mathbf{x}, \mathbf{b_i}, c_j),   
+\end{equation}
+in the region defined by the bounding box $\mathbf{b_i}$ for class $c_j$. Note that, as seen in Fig.~\ref{fig:teaser}, \textbf{(a)} for certain $i,j$ pairs $\mathbf{\hat{x}}_{ij} \approx \mathbf{x}$ or the inpainted object may be wrong.
+
+% As inpainting is a costly operation, for it to be scalable we select only the relevant $i$ and $j$ for input $x$. 
+% \dimpp{say sliding window somewhere. It should be clear that we search everywhere (all locations and different scales)}
+
+\mypar{Verifier.} The goal of the verifier $\mathcal{V}$ is to identify whether the target category has been correctly inpainted in the image after the inpainting stage. Concretely, given a synthesized image $\hat{\mathbf{x}}_{ij}$ for an input bounding box $\mathbf{b_i}$ and target class $c_j$, we use a conditional verifier $\mathcal{V}(\mathbf{x}, c_j)$ that produces a set of detections:
+\begin{equation}
+\mathbf{B}_{ij} \equiv \mathcal{V}(\hat{\mathbf{x}}_{ij}, c_j)
+\end{equation}
+\noindent where each element of $\mathbf{B}_{ij}$ is a predicted bounding box. If the detector $\mathcal{V}$ identifies the object in multiple locations for the target class $c_j$, we select the verifier bbox with the highest \textbf{I}ntersection \textbf{o}ver \textbf{U}nion (IoU) to the input bounding box $\mathbf{b_i}$:
+\begin{equation}
+\mathbf{b}_{ij} = \arg\max_{b \in \mathbf{B}_{ij}} \text{IoU}(\mathbf{b}, \mathbf{b_i})
+\end{equation}
+\noindent Low confidence detections are discarded by setting $\mathbf{b_{ij}} \leftarrow \varnothing$. Inpainting often tends to replace objects in images instead of adding them. To guarantee that no object locations are associated with replacements, we filter pre-existing objects of the target class $c$ by discarding any verified bounding box $b_i$ with IoU $\geq 0.5$ to verified objects of the same class in the background image $x_{\text{bg}}$.
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=\linewidth]{img/Fig3-polish-3.pdf}
+    \caption{\textbf{Spatial Prior (\textsc{HiddenObjects})} aggregated as a heatmap. (\textbf{Left}) We visualize the mean aggregated spatial prior across all images of \textsc{HiddenObjects} for different classes listed on the left. Classes such as \textit{bench} and \textit{boat} tend to appear near the bottom of images, while \textit{kite} occurs more frequently near the top. These patterns reflect both semantic regularities (e.g., kite in the sky) and inherent photographic biases in image datasets.
+    (\textbf{Right}) We visualize per-instance random example of spatial priors. 
+    %Here, spatial bias becomes more clear. 
+    %For example, \textit{benches} align with the lower parts of street scenes, while \textit{traffic lights} appear predominantly in the upper regions.
+    }
+    \label{fig:cherry_picked_dataset}
+\end{figure}
+
+
+% \dimpp{not clear.. explain what is happening, inpainting likes replacing objects objects instead of adding. This is not our intention. That's why we filter them by run a detector to detect existing objects in the background images}
+
+\mypar{Ranker.} After verifying correct insertions the goal of the ranker $\mathcal{R}$ is to assign a score as to which of those insertions are more preferred than others. This is an essential step to finalizing out object prior as it gives us a way of quantifying preference between different bounding box locations. Namely, for each image $\hat{\mathbf{x}}_{ij}$ and class $c_j$ our final extracted prior $\mathbf{S}(\mathbf{x},c_j)$ can be computed as
+\begin{equation}
+\mathbf{S}(\mathbf{x},c_j) = \{(\mathbf{b}_{ij}, r_{ij}),\; \forall\; \mathbf{b}_{ij} \neq \varnothing \},\text{ where }r_{ij} \equiv \mathcal{R}(\hat{\mathbf{x}}_{ij},c_j).
+\label{eq:reward}
+\end{equation}
+
+% \marcoblock{\mypar{Ranker.}
+% After verification, we obtain a set of valid insertions where the target object has been successfully synthesized in the proposed region. The role of the ranker $\mathcal{R}$ is not to determine validity, but to quantify the relative plausibility of each verified placement. Concretely, for each verified inpainted image $\hat{\mathbf{x}}_{ij}$ and class $c_j$, the ranker assigns a scalar score:
+
+% \begin{equation}
+% r_{ij} = \mathcal{R}(\hat{\mathbf{x}}_{ij},c_j)
+% \label{eq:reward}
+% \end{equation}
+
+% The score reflects how natural the synthesized object placement appears in the scene. Importantly, the ranker operates only on insertions that passed the verifier, and therefore serves solely to rank valid bounding boxes rather than filtering them. The resulting scores allow us to order candidate locations for object placement and construct the spatial prior $\mathbf{S}(\mathbf{x},c)$.}
+
+
+% \dimpp{Not clear what the goal of the verifier is. the detector and the ranker have a different purpose. Help the reader understand the idea here. not just the technicalities. We say it in the intro but here it's not clear what's going on}
+
+
+\subsection{Dataset Construction}
+\label{dataprep}
+
+To construct \textsc{HiddenObjects}, we randomly select images from 126 unique background classes from Places365~\cite{zhou2017places}, such as promenade, downtown, harbor, or classroom. We then pick 10 macro-categories of objects, such as food, furniture, animal, etc, and for each select 10 classes from COCO~\cite{lin2014microsoft}, resulting in 50 distinct object categories $c_j$. To avoid implausible insertions, we manually pair object categories with background categories. Given a set of valid background object pairs, we randomly sample them until we compute a total of 27K spatial priors, with $1,004$ bounding boxes for each. After our ranker stage, our final dataset consists of \numscenes positively annotated backgrounds and 2,097,587 positive bounding box annotations (more details of our object background selection in supplementary). We provide a split of 85\% / 10\% / 5\% for using our dataset for training, validation, and testing. 
+
+\mypar{Framework Implementation} Unless stated otherwise, our inpainter-verifier pipeline uses the \textit{Qwen-Image-ControlNet-Inpainting} \cite{wu2025qwen} model as the inpainter backbone with 20 inference steps and classifier-free guidance set to 4.0. For the verifier module, we utilize Grounded-SAM-2~\cite{ren2024grounded} for open-set object detection and ImageReward~\cite{xu2023imagereward} as a preference ranker. A comprehensive ablation justifying these specific component selections is provided in Sec.~\ref{sec:4.2}. 
+
+% To optimize the memory footprint and maximize computational throughput, we enable both attention and VAE slicing, which allows us to sustain a batch size of 45 images per GPU. The complete spatial prior extraction pipeline was executed on NVIDIA H100 GPUs, accumulating a total computational cost of approximately 6,519 GPU-hours ($\sim$271 GPU-days). 
+
+\mypar{Speedup.}
+\label{sec:speedup_text} For the majority of insertion proposals, we expect that the inpainting model will produce inpaintings with missing or wrong objects. Given that the diffusion inpainter is slow, it would be helpful if we could detect those faulty inpaintings early in the denoising procedure to avoid unnecessary computational costs. What we find, is that we can do so by measuring how much the noise predicted using the learned denoising network $\varepsilon_{\theta}$ varies between the conditional $\varepsilon_{\theta}(x_t, c_j)$ and the unconditional branch $\varepsilon_{\theta}(x_t, \varnothing)$ at each denoising step $x_t$. Namely, we find that the L1-difference between the two branches correlates highly with prompt-adherence, where successful generations exhibit much higher values than failed generations. More specifically, we compute a threshold where we can detect faulty boxes with a total recall of 81\% for a single denoising step, leaving only 30\% of proposals for inpainting, yielding a 2.4x speedup without degrading prior quality. Our analysis can be found in the supplementary.
+
+
+
+
+% \dimpp{we miss the setup here. Do we want to have one setup per subsection?}
+% \dimpp{What is OPA? train/set? What is our train/test set?}
+
+
+
+
+
+% \begin{equation}
+%     \mathcal{S}_{\text{valid}} = \left\{ b_i \in \mathcal{S} \mid \max_{b_{\text{det}} \in D_{\text{GSAM}}(x_{\text{bg}}, c)} \text{IoU}(b_i, b_{\text{det}}) < 0.5 \right\}
+% \end{equation}
+
+% \begin{equation}
+% \mathbf{S}(\mathbf{x}, c_j) \equiv \{ (\mathbf{b_{ij}}, r_{ij}) \mid b_{ij} \neq \varnothing \}
+% \end{equation}
+
+
+
+% \begin{figure}[ht]
+%     \centering
+%     \includegraphics[width=1\linewidth]{img/model_diagram.jpg}
+%     \caption{\textbf{Overview of the Location Model architecture.} }
+%     \label{fig:model_diagram}
+% \end{figure}
+
+ % \caption{\textbf{Spatial Priors in HiddenObjects}. (\textbf{Left}) Mean-aggregated heatmaps across the dataset reveal strong semantic regularities and photographic biases; for instance, \textit{boats} and \textit{benches} are consistently grounded in the lower third, while \textit{airplanes} and \textit{kites} dominate the upper regions. (\textbf{Right}) Per-instance priors demonstrate fine-grained scene awareness, where the model identifies viable surfaces for \textit{benches} and contextual elevations for \textit{traffic lights}, validating the dataset's ability to capture plausible object placement.}
+  

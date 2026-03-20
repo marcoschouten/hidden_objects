@@ -1,0 +1,43 @@
+
+
+\section{Introduction}
+
+Should a pizza ever appear on the floor? As products of human priors, natural scene images reflect strong spatial regularities: pizzas rest on tables, books lie on shelves, and clocks hang on walls. These contextual spatial priors have long been implicitly exploited to improve visual recognition and scene understanding~\cite{torralba2003context,rabinovich2007objects,galleguillos2008object,doersch2015unsupervised}. While these priors underly most visual datasets, they have not been explicitly modeled or learned at scale. Explicitly modeling these spatial priors enables applications, such as realistic image editing~\cite{schouten2025poempreciseobjectlevelediting,chen2026referring} or outlier detection.
+
+Recent work on object placement has approached the extraction of spatial priors either by removing existing objects from images via inpainting~\cite{wasserman2024paint,parihar2024text2place,winter2025objectmate} or by manually annotating exemplar object placements for new objects~\cite{liu2021opa,li2023dreamedit}. While the first approach can produce priors automatically, the removed objects can contain both subtle or strong background artifacts (see Fig.~\ref{fig:artefact}) that enable shortcut learning. The second one avoids background artifacts, but as manual annotation is not scalable, it becomes a trade-off between low-dataset diversity (as not a lot of images can be annotated) to unconfident annotations (as images can only be annotated by few people). Meanwhile, in both cases, datasets contain sparse object placements (i.e., one location per instance) and often no information according to the likelihood of these proposals.
+
+% \dimpp{we can consider showing results from PIPE to make this clear, but I think it's minor. we can have them in supmar if no space.}\marco{I think is very nice and we should include in the main paper}
+
+Instead, our main observation is that the notion of spatial priors is closely related to image completion: given a scene image, predicting plausible object placements is essentially a matter of filling in missing content. Early data-driven approaches showed that this could be achieved by leveraging the context of millions of images~\cite{hays2007scene}. Interestingly, even early GAN-based image editing tools revealed that generative models implicitly learn contextual constraints. They understand where objects belong and resist placing them in implausible regions (e.g., refusing to draw doors in the sky)~\cite{bau2018gan,bau2020units}. 
+More recently, text-conditioned diffusion models have shown remarkable abilities in image generation and inpainting~\cite{rombach2021highresolution, ramesh2022hierarchical, zhang2023adding} enabled by training on billions of web images~\cite{schuhmann2022laion}. Unlike previous approaches, diffusion models offer fine-grained controllability, allowing users to add or blend objects across all plausible locations within an input scene.
+
+Motivated by their abilities, we propose a framework to extract scalable, dense, and explicit spatial priors directly from diffusion models without \textbf{any} human intervention. Practically, our key observation is that while diffusion models can inpaint objects in semantically plausible locations (Fig.~\ref{fig:teaser}.i), they may otherwise wrongly inpaint (Fig.~\ref{fig:teaser}.ii) or refuse to do so (Fig.~\ref{fig:teaser}.iii). Using state-of-the-art object detectors~\cite{ren2024grounded} we can verify the validity of an insertion. Furthermore, using an image-based reward model~\cite{xu2023imagereward}, we can rank preferences across verified placements. Testing exhaustively multiple insertions with a sliding window across the image, we can produce explicit, class-conditioned spatial priors that densely capture and rank all plausible object locations within a scene (Fig.~\ref{fig:teaser}b).
+
+% \todo{Marco todo: update}
+% \dimpp{what do our results show? What are the main findings? Quality and usefulness of what we do?}
+
+Using our pipeline, we construct a large-scale dataset of 27M object placements annotations across 27k images. Moreover, we distill these priors into a transformer-based model that predicts bounding boxes for new scenes efficiently, enabling fast inference for downstream applications. Our experimental results reveal three key findings. 
+First, on the downstream task of object insertion, our automatically generated annotations yield significantly higher image editing quality than human annotations (3.90 vs. 2.68 average ImgEdit-Judge score~\cite{ye2025imgedit}), demonstrating that manual placement labels are inherently ambiguous and inconsistent. 
+Second, the extracted spatial priors closely align with human placement expectations while exhibiting greater spatial diversity than standard object-centric recognition datasets, which suffer from severe center-crop bias.
+Third, our distilled model outperforms all existing placement baselines and zero-shot VLMs by a large margin, confirming that dense, reward-weighted spatial priors are essential for learning robust placement distributions.
+
+%Our experimental results show that \todo{????}
+
+Our contributions are threefold:
+\noindent\textbf{(1)} We present a scalable framework to extract multi-class spatial priors from diffusion models for input images.
+\textbf{(2)} We construct \textsc{HiddenObjects}, a dataset of 27M densely evaluated object placements in 27k images.
+\textbf{(3)} We distill these priors into a lightweight transformer model for fast inference 230,000 faster) of object placement proposals. 
+We distill these priors into a lightweight transformer model that achieves a 230,000$\times$ speedup and 300$\times$ memory reduction over the full exhaustive extraction pipeline, enabling fast object placement proposals for downstream applications.
+%\dimpp{is this one of our top3 contributions? Probably yes?} 
+%\dimpp{don't say 3.7 ms. say XXXX times faster than our exhaustive seach with diffusion models}
+
+% (3) We distill these priors into a lightweight transformer model that achieves a 686× speedup and 300× memory reduction over the full extraction pipeline, enabling real-time object placement proposals for downstream applications.
+
+
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{img/figure_2_pipeline-Page-26.drawio-compressed.pdf}
+  \caption{\textbf{Background artifacts in PIPE~\cite{wasserman2024paint}.} Object removal pipelines are effective at removing the requested object but leave visible traces that can induce shortcut learning, e.g., (left) blurry area and the shadow presence, or (right) larger artifacts.}
+  \label{fig:artefact}
+\end{figure}

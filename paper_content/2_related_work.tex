@@ -1,0 +1,101 @@
+\section{Related Work}
+
+    % \caption{\textbf{Object Placement Datasets.} We compare common datasets used to learn object placement models. Manual annotation datasets are often limited in size, while scalable approaches containg artifacts. Our \textit{ScenePriors10K} provides a scalable and artifact-free solution. In addition our dataset yields dense annotations with a large number of negative locations. \todo{TODO caption!, does it make sense to mention DreamEdit, DreamCom, PBE, ObjectStitch, GLIGEN, Human Affordance??} \begin{notes} PBE/GLIGEN/ObjectStich does not have annotation pairs we need of clean images - they just train on detection datasets like openimages. DreamEditBench/DreamCom(MureCom) yes, same as opa but much smaller (10 reasonable backgrounds for 22 categories and manual annotations --> tot 220, MureCom is the same but with a few images more. ) Humanaffordance (https://arxiv.org/pdf/2304.14406) have masked scene images and they learn this from videos, is a parallel direction unrelated to ours. \end{notes} }
+
+\begin{table*}[t]
+    \centering
+    \caption{\textbf{Object Placement Datasets.} 
+Comparison of common datasets for learning object placement models. Manually annotated datasets are limited in scale, while automated approaches often introduce visual artifacts via inpainting. Our proposed \textsc{HiddenObjects} dataset achieves both scalability, high-quality dense bounding box annotations, and artifact-free backgrounds.}
+    \label{tab:dataset_stats_dense}
+    \resizebox{\textwidth}{!}{
+    \begin{tabular}{lccccccc}
+        \toprule
+        \multirow{2}{*}{\textbf{Dataset}} & \textbf{\# Annotation} & 
+        \textbf{\# Positive Box}  & 
+        \textbf{\# Negative Box}  & 
+        \textbf{Real} &
+        \textbf{Dense} &
+        \textbf{Scalable} &
+        \textbf{Artifact-free} \\
+         & \textbf{Boxes} & 
+        \textbf{(per instance)}  & 
+        \textbf{(per instance)}  & 
+        \textbf{Images} &
+        \textbf{Priors} &
+        \textbf{} & \textbf{Background} \\
+        \midrule
+        DreamEditBench~\cite{li2023dreamedit} & 220 & 1 & 0 & \textcolor{green!70!black}{\ding{51}} & \textcolor{red}{\ding{55}} & \textcolor{red}{\ding{55}} & \textcolor{green!70!black}{\ding{51}} \\
+        MureCom~\cite{lu2023dreamcom} & 640 & 1 & 0 & \textcolor{green!70!black}{\ding{51}} & \textcolor{red}{\ding{55}} & \textcolor{red}{\ding{55}} & \textcolor{green!70!black}{\ding{51}} \\
+        OPA~\cite{liu2021opa} & 0.07M & 1.9 & 3.8 & \textcolor{green!70!black}{\ding{51}}  & \textcolor{red}{\ding{55}} & \textcolor{red}{\ding{55}} & \textcolor{green!70!black}{\ding{51}} \\
+        OPA-ext~\cite{liu2021opa} & 0.15M & 2.2 & 4.3 & \textcolor{green!70!black}{\ding{51}}  & \textcolor{red}{\ding{55}} & \textcolor{red}{\ding{55}} & \textcolor{green!70!black}{\ding{51}} \\
+        PIPE~\cite{wasserman2024paint} & 0.89M & 1 & 0 & \textcolor{red}{\ding{55}}  & 
+        \textcolor{red}{\ding{55}} & 
+        \textcolor{green!70!black}{\ding{51}} & \textcolor{red}{\ding{55}} \\
+        SAM-FB~\cite{he2024affordance}  & 3M & 1 & 0 &
+        \textcolor{red}{\ding{55}}  & 
+        \textcolor{red}{\ding{55}}  & 
+        \textcolor{green!70!black}{\ding{51}} & \textcolor{red}{\ding{55}} \\
+        \rowcolor{gray!15} 
+        \textbf{\textsc{HiddenObjects}} & \textbf{\numannotation} & \textbf{77.7} & \textbf{926.3} & 
+        \textcolor{green!70!black}{\ding{51}} & 
+        \textcolor{green!70!black}{\ding{51}} & 
+        \textcolor{green!70!black}{\ding{51}} & \textcolor{green!70!black}{\ding{51}} \\
+        \bottomrule
+    \end{tabular}
+    }
+\end{table*}
+\mypar{Spatial Priors.}
+We define a \textit{spatial prior} as the probability distribution of valid bounding box locations for inserting a foreground object in a given scene.
+Recent approaches learn spatial priors through VLMs that reason over geometric structure~\cite{abdelreheem2025Placeit3d,huang2025fireplace}. Others model the spatial prior for domain-specific objects~\cite{rishubh2025monoplace3D,petersen2025scene}. However, such methods are domain-constrained, dependent on 3D annotations, and do not generalize to scene images. Instead, we learn spatial priors on scene images by distilling the implicit knowledge about object location priors that is embedded in diffusion models from their extensive scale image training data \cite{schuhmann2022laion}.
+
+
+
+% the table should be a fast way to read the related work
+% \begin{table}[!t]
+%     \centering
+%     \caption{Object Placement Datasets. \textit{ScenePriors10K} contains synthetic (\faRobot) annotations for object insertions on artifact-free background scenes.}
+%     \label{tab:dataset_stats_3col}
+%     \begin{tabular}{lrrrc}
+%         \toprule
+%         \textbf{Data} & \textbf{\#img} &\textbf{\#bbox} &  \multicolumn{1}{c}{\textbf{Type}} & \textbf{Source}  \\
+%         \midrule
+%         OPA~\cite{liu2021opa} & 62K & 2.5M & Manual \textcolor{red}{\ding{55}}& \faUser \\
+%         PIPE~\cite{wasserman2024paint} & 889K & 1.8M &  Artifact \textcolor{red}{\ding{55}} & \faRobot\\
+%         SAM-FB~\cite{parihar2024text2place} & 3M & 3M & Artifact \textcolor{red}{\ding{55}} &  \faRobot \\
+%         ObjectMate~\cite{winter2025objectmate} & 4.5M & 18M &  Artifact \textcolor{red}{\ding{55}} & \faRobot \\
+%          \textit{ScenePriors10K} & 10K & 10M & Auto\textcolor{green!70!black}{\ding{51}} &  \faRobot \\
+%         \bottomrule
+%     \end{tabular}
+% \end{table}
+% \begin{table*}[t]
+%     \centering
+%     \caption{Object Placement Datasets. \textit{ScenePriors10K} provides \textbf{dense} (\faRobot) annotations for object insertions on artifact-free background scenes.}
+%     \label{tab:dataset_stats_dense}
+%     \begin{tabular}{lcccc}
+%         \toprule
+%         \textbf{Dataset} & \textbf{Total Bounding Boxes} & \textbf{Avg. Boxes per Image} & \textbf{Background Source} & \textbf{Annotation Method} \\
+%         \midrule
+%         OPA~\cite{liu2021opa} & 2.5M & $\approx$40 & Original &  Manual \\
+%         PIPE~\cite{wasserman2024paint} & 1.8M & $\approx$2 & Synthetic & Automatic \\
+%         SAM-FB~\cite{parihar2024text2place} & 3M & 1 & Synthetic & Automatic \\
+%         ObjectMate~\cite{winter2025objectmate} & 18M & $\approx$4 & Synthetic & Automatic \\
+%         \textit{ScenePriors10K} & 10M & 1000 & Original & Automatic \\
+%         \bottomrule
+%     \end{tabular}
+% \end{table*}
+
+\mypar{Object placement} aims to identify suitable locations for inserting a foreground object into a background scene with the highest semantic and geometric consistency. Early \textit{context-based methods}~\cite{dvornik2018modeling,volokitin2020efficiently} are limited to evaluating placement for input locations, lacking the ability to propose new ones.  
+% In contrast, \textit{adversarial approaches}~\cite{lee2018context,lin2018st,zhou2022sac} learned placement prediction distributions. However the generator produces limited diversity, failing to capture full data distribution. Unlike our method which aims at modeling a realistic distribution from all scene images.
+More recently, \textit{location models} learned placement prediction distributions from manually annotated data~\cite{yun2025imaginingunseengenerativelocation,poska2025hopnet,cheng2025diverse,zhou2022learning,zhang2020and,zhu2023topnet,niu2022fast,zhou2022sac,lee2018context,lin2018st}. Yet, manually annotated data collection
+is not scalable, and therefore, object placement models trained on these data struggle to generalize.  Furthermore, a dataset that provide annotated locations, copy-paste foreground objects into backgrounds scenes, lacking perspective adaptation~\cite{liu2021opa,qin2024think}. To resolve this, a set of synthetic approaches~\cite{zhou2025bootplace,winter2025objectmate,gao2025object,wasserman2024paint} train location models from large-scale synthetic data obtained by removing foreground objects from background scenes via inpainting. Unlike our approach, the construction of these synthetic datasets often introduces inpainting artifacts in the original object region of \textit{input background images}, which enables shortcut learning when used to train object placement models.
+
+\mypar{Vision Language Models (VLMs)} are an alternative paradigm to inferring object placement locations. Some methods~\cite{canet2024thinking,he2024affordance,yuan2023learning} use VLM-generated context descriptions to support outpainting of background regions around a given foreground object to create annotated pairs of object insertion, while others~\cite{li2025freeinsert,liang2025hocomp} uses VLM to predict placement locations directly. Yet, VLM-generated context descriptions lack the diversity captured in large scene datasets, such as Places365~\cite{zhou2017places}, and  often unreliably predict locations directly. Closer to us, some methods~\cite{GaoJosephDeLaTorre2025Teleportraits,tewel2025addit,parihar2024text2place,liang2025hocomp,kulal2023putting} rely on diffusion models implicit spatial priors %\cite{hertz2022prompt,huberman2024edit} 
+for predicting placement locations. However, these predictions are tied to their downstream image editing task, limiting their use in other models or applications. Unlike prior work, our methodology enables fully automated, artifact-free annotation of object placements at scale by distillation spatial object priors from text-conditioned diffusion models. What this enables, is modeling the full distribution of plausible and implausible object placements in a realistic distribution of scene images, useful for a variety of downstream tasks.
+
+
+\mypar{Datasets.} Existing datasets for object placement typically require a background image without the target object and a bounding box that annotates a placement location (Tab.~\ref{tab:dataset_stats_dense}).
+There are two main strategies for constructing such datasets. The first one relies on manual annotation of real images, where annotators directly mark potential regions for given objects in real scenes as positive or negative~\cite{liu2021opa,li2023dreamedit,lu2023dreamcom}. The second one utilizes object-removal pipelines to obtain the object-free background from real scenes that contain the target object in a valid location~\cite{parihar2024text2place,wasserman2024paint,winter2025objectmate}.
+%
+Manual annotations are not scalable, and object removal pipelines yield artifacts in the \textit{input background image}. In contrast, our pipelines provide automatically generated bounding box annotations for real images. 
+
+

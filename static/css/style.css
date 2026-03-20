@@ -1,88 +1,66 @@
-body {
-  font-family: 'Helvetica Neue', Arial, sans-serif;
-  color: #333;
-}
+/* Nerfies-style overrides — all heavy lifting is done by Bulma */
 
-/* Hero */
-.hero {
-  background: #f5f5f5;
-  padding: 3rem 1.5rem 2rem;
+body {
+  font-family: 'Noto Sans', sans-serif;
+  font-size: 17px;
 }
 
 .publication-title {
-  font-size: 2.2rem;
-  font-weight: 700;
-  line-height: 1.2;
-  margin-bottom: 1rem;
+  font-family: 'Google Sans', sans-serif;
 }
 
 .publication-authors {
-  margin-bottom: 0.4rem;
+  font-family: 'Google Sans', sans-serif;
 }
 
 .publication-authors a {
   color: #3273dc;
-  text-decoration: none;
 }
 
 .publication-authors a:hover {
   text-decoration: underline;
 }
 
-.publication-venue {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #e05252;
-  margin: 0.8rem 0 1.2rem;
+.publication-links .link-block {
+  margin: 0 4px;
 }
 
-/* Buttons */
-.publication-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem;
-  justify-content: center;
-  margin-top: 1rem;
+/* Nerfies teaser subtitle */
+.hero.teaser .hero-body {
+  padding-top: 1rem;
+  padding-bottom: 2rem;
 }
 
-.publication-links .button {
-  font-size: 0.95rem;
-  padding: 0.5rem 1.1rem;
-}
-
-/* Sections */
-.section {
-  padding: 3rem 1.5rem;
-}
-
-/* Divider */
-.divider {
-  border: none;
-  border-top: 1px solid #e0e0e0;
-  margin: 0 auto;
-  max-width: 900px;
-}
-
-/* BibTeX block */
-.bibtex-block {
-  background: #f4f4f4;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  padding: 1.2rem 1.5rem;
-  font-size: 0.88rem;
+.hero.teaser .subtitle {
+  font-size: 1rem;
   line-height: 1.6;
-  overflow-x: auto;
-  white-space: pre;
+  color: #4a4a4a;
+  text-align: justify;
 }
 
-/* Footer */
-.footer {
+/* Video embed — 16:9 responsive */
+.publication-video {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+}
+
+.publication-video iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* BibTeX pre block */
+pre {
   background: #f5f5f5;
-  padding: 2rem 1.5rem;
-  font-size: 0.9rem;
-  color: #777;
-}
-
-.footer a {
-  color: #3273dc;
+  padding: 1.25rem 1.5rem;
+  border-radius: 4px;
+  overflow-x: auto;
+  font-size: 0.85rem;
+  line-height: 1.6;
 }

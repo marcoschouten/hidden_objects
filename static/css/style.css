@@ -1,0 +1,88 @@
+body {
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  color: #333;
+}
+
+/* Hero */
+.hero {
+  background: #f5f5f5;
+  padding: 3rem 1.5rem 2rem;
+}
+
+.publication-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+}
+
+.publication-authors {
+  margin-bottom: 0.4rem;
+}
+
+.publication-authors a {
+  color: #3273dc;
+  text-decoration: none;
+}
+
+.publication-authors a:hover {
+  text-decoration: underline;
+}
+
+.publication-venue {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #e05252;
+  margin: 0.8rem 0 1.2rem;
+}
+
+/* Buttons */
+.publication-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.publication-links .button {
+  font-size: 0.95rem;
+  padding: 0.5rem 1.1rem;
+}
+
+/* Sections */
+.section {
+  padding: 3rem 1.5rem;
+}
+
+/* Divider */
+.divider {
+  border: none;
+  border-top: 1px solid #e0e0e0;
+  margin: 0 auto;
+  max-width: 900px;
+}
+
+/* BibTeX block */
+.bibtex-block {
+  background: #f4f4f4;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 1.2rem 1.5rem;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+/* Footer */
+.footer {
+  background: #f5f5f5;
+  padding: 2rem 1.5rem;
+  font-size: 0.9rem;
+  color: #777;
+}
+
+.footer a {
+  color: #3273dc;
+}

@@ -4,10 +4,25 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>HiddenObjects</title>
+  <title>HiddenObjects | Scalable Spatial Priors for Object Placement</title>
+  <meta name="description"
+    content="HiddenObjects is a large-scale benchmark and model for class-conditioned object placement, with dense spatial priors distilled from diffusion-based inpainting." />
+  <meta name="theme-color" content="#ffffff" />
+  <meta property="og:title" content="HiddenObjects" />
+  <meta property="og:description"
+    content="Scalable diffusion-distilled spatial priors for object placement, with 27M placement annotations." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="assets/teaser_full.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="HiddenObjects" />
+  <meta name="twitter:description"
+    content="Scalable diffusion-distilled spatial priors for object placement, with 27M placement annotations." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/academicons/1.9.4/css/academicons.min.css" />
   <link rel="stylesheet" href="static/css/style.css" />
 </head>
 
@@ -15,10 +30,12 @@
 
   <!-- ══ NAVBAR ══════════════════════════════════════════════ -->
   <nav class="navbar" role="navigation" aria-label="main navigation">
-    <div class="navbar-brand">
-      <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
-        <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
-      </a>
+    <div class="container is-max-desktop">
+      <div class="navbar-brand">
+        <a class="navbar-item has-text-weight-semibold" href="index.html" aria-label="HiddenObjects home">
+          HiddenObjects
+        </a>
+      </div>
     </div>
   </nav>
 
@@ -61,26 +78,29 @@
 
                 <!-- arXiv -->
                 <span class="link-block">
-                  <a href="#" class="external-link button is-normal is-rounded is-dark">
+                  <span class="button is-normal is-rounded is-dark is-static" aria-disabled="true"
+                    title="Paper link will be published soon">
                     <span class="icon"><i class="ai ai-arxiv"></i></span>
-                    <span>arXiv</span>
-                  </a>
+                    <span>arXiv (soon)</span>
+                  </span>
                 </span>
                 <!-- Video -->
 
                 <!-- Code -->
                 <span class="link-block">
-                  <a href="#" class="external-link button is-normal is-rounded is-dark">
+                  <span class="button is-normal is-rounded is-dark is-static" aria-disabled="true"
+                    title="Code repository will be published soon">
                     <span class="icon"><i class="fab fa-github"></i></span>
-                    <span>Code</span>
-                  </a>
+                    <span>Code (soon)</span>
+                  </span>
                 </span>
                 <!-- Dataset -->
                 <span class="link-block">
-                  <a href="#" class="external-link button is-normal is-rounded is-dark">
+                  <span class="button is-normal is-rounded is-dark is-static" aria-disabled="true"
+                    title="Dataset release link will be published soon">
                     <span class="icon"><i class="fas fa-database"></i></span>
-                    <span>Dataset</span>
-                  </a>
+                    <span>Dataset (soon)</span>
+                  </span>
                 </span>
               </div>
             </div><!-- /column links -->
@@ -97,7 +117,8 @@
     <div class="hero-body" style="padding-left:0; padding-right:0;">
       <!-- Full-bleed image — wider than the text column -->
       <div style="max-width:1400px; margin:0 auto; padding:0 1rem;">
-        <img src="assets/teaser_full.png" alt="Teaser" style="width:100%; display:block; border-radius:6px;" />
+        <img src="assets/teaser_full.png" alt="Overview of the HiddenObjects pipeline and examples"
+          style="width:100%; display:block; border-radius:6px;" decoding="async" fetchpriority="high" />
       </div>
       <!-- Caption stays within the normal text width -->
       <div class="container is-max-desktop">
@@ -186,8 +207,8 @@
       <h2 class="title is-3 has-text-centered">Dataset</h2>
       <div class="content has-text-justified">
         <p>
-          We construct <strong><span style="font-variant:small-caps;">HiddenObjects</span></strong>
-          We pair 27k background images from 126 scene
+          We construct <strong><span style="font-variant:small-caps;">HiddenObjects</span></strong> by pairing 27k
+          background images from 126 scene
           categories of Places365 with 50 COCO foreground categories across 10 macro-classes (food,
           furniture, animal, vehicle, …). Each scene–category pair is annotated with 1,004 ranked
           bounding box proposals, yielding <strong>27M placement annotations</strong> in total.
@@ -293,7 +314,11 @@
         <span style="color:#23d160; font-weight:600;">Green</span> = accepted &nbsp;·&nbsp;
         <span style="color:#ff3860; font-weight:600;">Red</span> = rejected.
       </p>
-      <div id="dv-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px;"></div>
+      <div id="dv-status" role="status" aria-live="polite" class="has-text-centered is-size-7"
+        style="color:#888; margin-bottom:0.75rem;">
+        Loading visualization...
+      </div>
+      <div id="dv-grid" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:1rem;"></div>
 
 
       <br>
@@ -301,7 +326,8 @@
       <!-- Bias visualization -->
       <h3 class="title is-4">Relative Object Size and Distribution of Object Centers</h3>
       <figure class="image" style="margin-top:1.5rem;">
-        <img src="assets/bias.png" alt="Dataset bias visualization" style="width:100%; border-radius:6px;" />
+        <img src="assets/bias.png" alt="Dataset bias visualization" style="width:100%; border-radius:6px;"
+          loading="lazy" decoding="async" />
       </figure>
 
 
@@ -312,45 +338,66 @@
 
   <script>
     (function () {
-      const DATA_URL = 'data/annotations.json';
+      const DATA_URL = 'data/annotations_selected.json';
       const IMG_BASE = 'data/';
       const REVEAL_TOP_N = 5;
-      const LERP_IN = 0.10;
-      const LERP_OUT = 0.06;
+      const LERP_IN = 0.11;
+      const LERP_OUT = 0.07;
 
       function dist2(cx, cy, b) {
-        const bx = (b[0] + b[2]) / 2, by = (b[1] + b[3]) / 2;
+        const bx = (b[0] + b[2]) / 2;
+        const by = (b[1] + b[3]) / 2;
         return (cx - bx) ** 2 + (cy - by) ** 2;
       }
 
-      function makeCell(entry) {
+      function makeCard(entry) {
+        const fgClass = typeof entry.fg_class === 'string' ? entry.fg_class : 'object';
+        const card = document.createElement('div');
+        card.style.cssText = [
+          'display:flex',
+          'flex-direction:column',
+          'gap:8px'
+        ].join(';');
+
         const wrap = document.createElement('div');
-        wrap.style.cssText = 'position:relative; border-radius:8px; overflow:hidden; cursor:crosshair; box-shadow:0 1px 4px rgba(0,0,0,.15);';
+        wrap.style.cssText = [
+          'position:relative',
+          'border-radius:10px',
+          'overflow:hidden',
+          'cursor:crosshair',
+          'line-height:0',
+          'box-shadow:0 2px 10px rgba(0,0,0,.14)'
+        ].join(';');
 
         const img = new Image();
+        img.src = (entry.image_file && entry.image_file.startsWith('data:'))
+          ? entry.image_file
+          : (IMG_BASE + entry.image_file);
+        img.alt = fgClass + ' placement background';
         img.style.cssText = 'display:block; width:100%; height:auto;';
-        img.alt = entry.fg_class;
 
         const canvas = document.createElement('canvas');
         canvas.style.cssText = 'position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;';
 
-        const badge = document.createElement('div');
-        badge.textContent = entry.fg_class;
-        badge.style.cssText = [
-          'position:absolute; bottom:8px; left:50%; transform:translateX(-50%);',
-          'background:rgba(0,0,0,.55); color:#fff; font-size:0.72rem; font-weight:600;',
-          'padding:2px 10px; border-radius:20px; text-transform:capitalize;',
-          'letter-spacing:.04em; white-space:nowrap; pointer-events:none;'
-        ].join('');
+        const label = document.createElement('div');
+        label.textContent = 'Place a ' + fgClass + ' here?';
+        label.style.cssText = 'font-size:.92rem; color:#4a4a4a; text-align:center;';
+
+        const meta = document.createElement('div');
+        meta.innerHTML = (entry.combo_idx !== undefined && entry.combo_idx !== null)
+          ? ('combo&nbsp;' + entry.combo_idx + ' &nbsp;·&nbsp; bg&nbsp;' + entry.bg_id)
+          : ('bg&nbsp;' + entry.bg_id);
+        meta.style.cssText = 'font-size:.72rem; color:#9a9a9a; text-align:center; font-family:monospace;';
 
         const allBoxes = [
-          ...entry.good_bboxes.map(b => ({ b, kind: 'good', alpha: 0 })),
-          ...entry.bad_bboxes.map(b => ({ b, kind: 'bad', alpha: 0 })),
+          ...entry.good_bboxes.map((b) => ({ b, kind: 'good', alpha: 0 })),
+          ...entry.bad_bboxes.map((b) => ({ b, kind: 'bad', alpha: 0 })),
         ];
 
-        let mouse = null, raf = null;
+        let mouse = null;
+        let raf = null;
 
-        function toImgCoords(e) {
+        function toImageCoords(e) {
           const rect = wrap.getBoundingClientRect();
           return {
             x: (e.clientX - rect.left) * (img.naturalWidth / rect.width),
@@ -365,68 +412,99 @@
           canvas.height = img.naturalHeight;
           ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-          let topGood = new Set(), topBad = new Set();
+          let topGood = new Set();
+          let topBad = new Set();
+
           if (mouse) {
             const rank = (arr) => arr
               .map((s, i) => ({ i, d: dist2(mouse.x, mouse.y, s.b) }))
               .sort((a, z) => a.d - z.d)
               .slice(0, REVEAL_TOP_N)
-              .map(x => x.i);
-            const goodStates = allBoxes.filter(s => s.kind === 'good');
-            const badStates = allBoxes.filter(s => s.kind === 'bad');
-            rank(goodStates).forEach(i => topGood.add(goodStates[i]));
-            rank(badStates).forEach(i => topBad.add(badStates[i]));
+              .map((x) => x.i);
+
+            const goodStates = allBoxes.filter((s) => s.kind === 'good');
+            const badStates = allBoxes.filter((s) => s.kind === 'bad');
+            rank(goodStates).forEach((i) => topGood.add(goodStates[i]));
+            rank(badStates).forEach((i) => topBad.add(badStates[i]));
           }
 
           let anyVisible = false;
           for (const s of allBoxes) {
             const target = (mouse && (topGood.has(s) || topBad.has(s))) ? 1 : 0;
             s.alpha += (target - s.alpha) * (target > s.alpha ? LERP_IN : LERP_OUT);
-            if (s.alpha < 0.004) { s.alpha = 0; continue; }
+            if (s.alpha < 0.004) {
+              s.alpha = 0;
+              continue;
+            }
+
             anyVisible = true;
             const [x1, y1, x2, y2] = s.b;
             const a = s.alpha;
+
             if (s.kind === 'good') {
-              ctx.strokeStyle = `rgba(35,209,96,${0.95 * a})`;
-              ctx.fillStyle = `rgba(35,209,96,${0.18 * a})`;
+              ctx.strokeStyle = 'rgba(35,209,96,' + (0.94 * a) + ')';
+              ctx.fillStyle = 'rgba(35,209,96,' + (0.16 * a) + ')';
             } else {
-              ctx.strokeStyle = `rgba(255,56,96,${0.90 * a})`;
-              ctx.fillStyle = `rgba(255,56,96,${0.13 * a})`;
+              ctx.strokeStyle = 'rgba(255,56,96,' + (0.90 * a) + ')';
+              ctx.fillStyle = 'rgba(255,56,96,' + (0.12 * a) + ')';
             }
+
             ctx.lineWidth = lw;
             ctx.fillRect(x1, y1, x2 - x1, y2 - y1);
             ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
           }
 
-          if (mouse || anyVisible) raf = requestAnimationFrame(tick);
-          else raf = null;
+          if (mouse || anyVisible) {
+            raf = requestAnimationFrame(tick);
+          } else {
+            raf = null;
+          }
         }
 
-        function startLoop() { if (!raf) raf = requestAnimationFrame(tick); }
+        function startLoop() {
+          if (!raf) raf = requestAnimationFrame(tick);
+        }
 
         wrap.addEventListener('mousemove', (e) => {
           if (!img.complete || !img.naturalWidth) return;
-          mouse = toImgCoords(e);
+          mouse = toImageCoords(e);
           startLoop();
         });
-        wrap.addEventListener('mouseleave', () => { mouse = null; startLoop(); });
 
-        img.src = IMG_BASE + entry.image_file;
+        wrap.addEventListener('mouseleave', () => {
+          mouse = null;
+          startLoop();
+        });
+
         wrap.appendChild(img);
         wrap.appendChild(canvas);
-        wrap.appendChild(badge);
-        return wrap;
+        card.appendChild(wrap);
+        card.appendChild(label);
+        card.appendChild(meta);
+        return card;
       }
 
       fetch(DATA_URL)
-        .then(r => r.json())
-        .then(entries => {
+        .then((r) => {
+          if (!r.ok) throw new Error('Failed to fetch annotations');
+          return r.json();
+        })
+        .then((entries) => {
           const grid = document.getElementById('dv-grid');
-          entries.forEach(e => grid.appendChild(makeCell(e)));
+          const status = document.getElementById('dv-status');
+          if (!Array.isArray(entries) || entries.length === 0) {
+            status.textContent = 'No interactive entries found.';
+            return;
+          }
+          entries.forEach((e) => grid.appendChild(makeCard(e)));
+          status.textContent = 'Move your cursor over each image to reveal nearest placement candidates.';
+        })
+        .catch(() => {
+          const status = document.getElementById('dv-status');
+          status.textContent = 'Could not load interactive data.';
         });
     })();
   </script>
-
 
   <!-- ══ METHOD ══════════════════════════════════════════════ -->
   <section class="section" style="background:#fafafa;">
@@ -476,22 +554,23 @@
       <!-- Example result: pizza spatial prior -->
       <div class="has-text-centered" style="margin-top:2rem;">
         <img src="assets/pizza_compressed.gif" alt="Pizza spatial prior"
-          style="width:100%; max-width:720px; height:auto; border-radius:6px;" />
+          style="width:100%; max-width:720px; height:auto; border-radius:6px;" loading="lazy" decoding="async" />
         <p class="is-size-6 mt-3" style="color:#555;">
           <strong>Example spatial prior creation.</strong>
-          Our pipelines makes an exhaustive search via sliding window locations on a kitchen scene for <em>pizza</em>
+          Our pipeline performs an exhaustive sliding-window search on a kitchen scene for <em>pizza</em>
           insertions.
         </p>
       </div>
 
       <!-- Ranker figure -->
       <figure class="image" style="margin-top:2rem;">
-        <img src="assets/ranker_details.jpg" alt="Ranker comparison" style="border-radius:6px;" />
+        <img src="assets/ranker_details.jpg" alt="Ranker comparison" style="border-radius:6px;" loading="lazy"
+          decoding="async" />
       </figure>
       <p class="is-size-6 has-text-centered mt-2" style="color:#555;">
-        <strong>Composite Overlay of Inpaintings..</strong> Multiple valid inpaintings are aggre-
-        gated into a single composite scene. Accepted objects are segmented and overlaid on
-        the source background. Insertions are ordered by preference ranking so the highest-
+        <strong>Composite Overlay of Inpaintings.</strong> Multiple valid inpaintings are aggregated into a
+        single composite scene. Accepted objects are segmented and overlaid on
+        the source background. Insertions are ordered by preference ranking so the highest
         ranked object remains unoccluded at the top of the stack.
       </p>
     </div>
@@ -509,7 +588,7 @@
       <h3 class="title is-4">Annotation Quality via Downstream Image Editing</h3>
       <div class="content">
         <p>
-          We evaluate the annotations via inpainting conditioned on input bounding box through
+          We evaluate the annotations via inpainting conditioned on input bounding boxes using
           <strong>ImgEdit-Judge</strong>
           (Qwen2.5-VL, scale 1–5) across three axes:
           Prompt Compliance (PC), Visual Naturalness (VN), and Physical &amp; Detail Coherence (PDC).
@@ -616,7 +695,8 @@
       <!-- Qualitative results -->
       <h3 class="title is-4" style="margin-top:2rem;">Qualitative Results</h3>
       <figure class="image">
-        <img src="assets/fig_qualitative_eccv.png" alt="Qualitative results" style="width:100%; border-radius:6px;" />
+        <img src="assets/fig_qualitative_eccv.png" alt="Qualitative results" style="width:100%; border-radius:6px;"
+          loading="lazy" decoding="async" />
       </figure>
       <p class="is-size-6 has-text-centered mt-2" style="color:#555;">
         <strong>Qualitative comparison of annotation quality.</strong>
@@ -644,7 +724,7 @@
       <!-- Distilled model figure -->
       <div style="margin-bottom:1.5rem;">
         <img src="assets/distilled_model.png" alt="Distilled model architecture"
-          style="width:100%; height:auto; border-radius:6px;" />
+          style="width:100%; height:auto; border-radius:6px;" loading="lazy" decoding="async" />
         <p class="is-size-6 has-text-centered mt-2" style="color:#555;">
           <strong>Distilled model architecture.</strong>
           A transformer encoder–decoder processes a background image and a CLIP text
@@ -797,7 +877,7 @@
       <div class="publication-video">
         <iframe
           src="https://docs.google.com/presentation/d/1-Zpliixw_3iKWcp7jqSefjYcpwOHg2LQ2ZLXDzi8nBQ/embed?start=false&loop=false&delayms=3000"
-          frameborder="0" allowfullscreen></iframe>
+          frameborder="0" allowfullscreen title="HiddenObjects slides" loading="lazy"></iframe>
       </div>
     </div>
   </section>
@@ -823,11 +903,17 @@
       <div class="content has-text-centered">
         <p>
           Website template adapted from
-          <a href="https://nerfies.github.io" target="_blank">Nerfies</a>.
+          <a href="https://nerfies.github.io" target="_blank" rel="noopener noreferrer">Nerfies</a>.
         </p>
       </div>
     </div>
   </footer>
+
+  <noscript>
+    <div class="container is-max-desktop" style="margin:1rem auto 2rem auto; color:#4a4a4a;">
+      JavaScript is disabled. Interactive annotations are unavailable without JavaScript.
+    </div>
+  </noscript>
 
 </body>
 

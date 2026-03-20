@@ -97,7 +97,7 @@
     <div class="hero-body" style="padding-left:0; padding-right:0;">
       <!-- Full-bleed image — wider than the text column -->
       <div style="max-width:1400px; margin:0 auto; padding:0 1rem;">
-        <img src="asset/teaser_full.png" alt="Teaser" style="width:100%; display:block; border-radius:6px;" />
+        <img src="assets/teaser_full.png" alt="Teaser" style="width:100%; display:block; border-radius:6px;" />
       </div>
       <!-- Caption stays within the normal text width -->
       <div class="container is-max-desktop">
@@ -158,19 +158,19 @@
         </div>
         <div class="column">
           <p class="title is-2" style="color:#363636; margin-bottom:0.2rem;">27k</p>
-          <p class="is-size-6" style="color:#555;">Real-world background scenes</p>
+          <p class="is-size-6" style="color:#555;">Real-world background scenes from Places365</p>
         </div>
         <div class="column">
           <p class="title is-2" style="color:#363636; margin-bottom:0.2rem;">50</p>
-          <p class="is-size-6" style="color:#555;">Object categories</p>
+          <p class="is-size-6" style="color:#555;">Foreground Object categories from COCO</p>
         </div>
         <div class="column">
-          <p class="title is-2" style="color:#363636; margin-bottom:0.2rem;">3ms</p>
+          <p class="title is-2" style="color:#363636; margin-bottom:0.2rem;">3.77ms</p>
           <p class="is-size-6" style="color:#555;">Inference after distillation</p>
         </div>
         <div class="column">
           <p class="title is-2" style="color:#363636; margin-bottom:0.2rem;">3.90</p>
-          <p class="is-size-6" style="color:#555;">vs. 2.68 sparse human annotations</p>
+          <p class="is-size-6" style="color:#555;">vs. 2.68 sparse human annotations via ImgEdit-Judge</p>
         </div>
       </div>
     </div>
@@ -180,6 +180,254 @@
 
 
 
+  <!-- ══ DATASET ═════════════════════════════════════════════ -->
+  <section class="section">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3 has-text-centered">Dataset</h2>
+      <div class="content has-text-justified">
+        <p>
+          We construct <strong><span style="font-variant:small-caps;">HiddenObjects</span></strong>
+          We pair 27k background images from 126 scene
+          categories of Places365 with 50 COCO foreground categories across 10 macro-classes (food,
+          furniture, animal, vehicle, …). Each scene–category pair is annotated with 1,004 ranked
+          bounding box proposals, yielding <strong>27M placement annotations</strong> in total.
+        </p>
+      </div>
+
+      <!-- Dataset comparison table -->
+      <h3 class="title is-4">Comparison with Existing Datasets</h3>
+      <div class="table-container">
+        <table class="table is-bordered is-striped is-narrow is-hoverable is-fullwidth">
+          <thead>
+            <tr class="has-background-dark">
+              <th class="has-text-white">Dataset</th>
+              <th class="has-text-white has-text-centered"># Boxes</th>
+              <th class="has-text-white has-text-centered">+ / inst</th>
+              <th class="has-text-white has-text-centered">− / inst</th>
+              <th class="has-text-white has-text-centered">Real Img</th>
+              <th class="has-text-white has-text-centered">Dense</th>
+              <th class="has-text-white has-text-centered">Scalable</th>
+              <th class="has-text-white has-text-centered">Clean BG</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>DreamEditBench</td>
+              <td class="has-text-centered">220</td>
+              <td class="has-text-centered">1</td>
+              <td class="has-text-centered">0</td>
+              <td class="has-text-centered" style="color:#23d160;">&#10003;</td>
+              <td class="has-text-centered" style="color:#ff3860;">&#10007;</td>
+              <td class="has-text-centered" style="color:#ff3860;">&#10007;</td>
+              <td class="has-text-centered" style="color:#23d160;">&#10003;</td>
+            </tr>
+            <tr>
+              <td>MureCom</td>
+              <td class="has-text-centered">640</td>
+              <td class="has-text-centered">1</td>
+              <td class="has-text-centered">0</td>
+              <td class="has-text-centered" style="color:#23d160;">&#10003;</td>
+              <td class="has-text-centered" style="color:#ff3860;">&#10007;</td>
+              <td class="has-text-centered" style="color:#ff3860;">&#10007;</td>
+              <td class="has-text-centered" style="color:#23d160;">&#10003;</td>
+            </tr>
+            <tr>
+              <td>OPA</td>
+              <td class="has-text-centered">0.07M</td>
+              <td class="has-text-centered">1.9</td>
+              <td class="has-text-centered">3.8</td>
+              <td class="has-text-centered" style="color:#23d160;">&#10003;</td>
+              <td class="has-text-centered" style="color:#ff3860;">&#10007;</td>
+              <td class="has-text-centered" style="color:#ff3860;">&#10007;</td>
+              <td class="has-text-centered" style="color:#23d160;">&#10003;</td>
+            </tr>
+            <tr>
+              <td>OPA-ext</td>
+              <td class="has-text-centered">0.15M</td>
+              <td class="has-text-centered">2.2</td>
+              <td class="has-text-centered">4.3</td>
+              <td class="has-text-centered" style="color:#23d160;">&#10003;</td>
+              <td class="has-text-centered" style="color:#ff3860;">&#10007;</td>
+              <td class="has-text-centered" style="color:#ff3860;">&#10007;</td>
+              <td class="has-text-centered" style="color:#23d160;">&#10003;</td>
+            </tr>
+            <tr>
+              <td>PIPE</td>
+              <td class="has-text-centered">0.89M</td>
+              <td class="has-text-centered">1</td>
+              <td class="has-text-centered">0</td>
+              <td class="has-text-centered" style="color:#ff3860;">&#10007;</td>
+              <td class="has-text-centered" style="color:#ff3860;">&#10007;</td>
+              <td class="has-text-centered" style="color:#23d160;">&#10003;</td>
+              <td class="has-text-centered" style="color:#ff3860;">&#10007;</td>
+            </tr>
+            <tr>
+              <td>SAM-FB</td>
+              <td class="has-text-centered">3M</td>
+              <td class="has-text-centered">1</td>
+              <td class="has-text-centered">0</td>
+              <td class="has-text-centered" style="color:#ff3860;">&#10007;</td>
+              <td class="has-text-centered" style="color:#ff3860;">&#10007;</td>
+              <td class="has-text-centered" style="color:#23d160;">&#10003;</td>
+              <td class="has-text-centered" style="color:#ff3860;">&#10007;</td>
+            </tr>
+            <tr class="has-background-info-light">
+              <td><strong><span style="font-variant:small-caps;">HiddenObjects</span></strong></td>
+              <td class="has-text-centered"><strong>27M</strong></td>
+              <td class="has-text-centered"><strong>77.7</strong></td>
+              <td class="has-text-centered"><strong>926.3</strong></td>
+              <td class="has-text-centered" style="color:#23d160;">&#10003;</td>
+              <td class="has-text-centered" style="color:#23d160;">&#10003;</td>
+              <td class="has-text-centered" style="color:#23d160;">&#10003;</td>
+              <td class="has-text-centered" style="color:#23d160;">&#10003;</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+
+      <!-- Interactive annotations -->
+      <h3 class="title is-4">Interactive Annotation Explorer</h3>
+      <p class="is-size-6 mb-4" style="color:#777;">
+        Hover over any image to reveal its placement annotations.
+        <span style="color:#23d160; font-weight:600;">Green</span> = accepted &nbsp;·&nbsp;
+        <span style="color:#ff3860; font-weight:600;">Red</span> = rejected.
+      </p>
+      <div id="dv-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px;"></div>
+
+
+      <br>
+
+      <!-- Bias visualization -->
+      <h3 class="title is-4">Relative Object Size and Distribution of Object Centers</h3>
+      <figure class="image" style="margin-top:1.5rem;">
+        <img src="assets/bias.png" alt="Dataset bias visualization" style="width:100%; border-radius:6px;" />
+      </figure>
+
+
+
+
+    </div>
+  </section>
+
+  <script>
+    (function () {
+      const DATA_URL = 'data/annotations.json';
+      const IMG_BASE = 'data/';
+      const REVEAL_TOP_N = 5;
+      const LERP_IN = 0.10;
+      const LERP_OUT = 0.06;
+
+      function dist2(cx, cy, b) {
+        const bx = (b[0] + b[2]) / 2, by = (b[1] + b[3]) / 2;
+        return (cx - bx) ** 2 + (cy - by) ** 2;
+      }
+
+      function makeCell(entry) {
+        const wrap = document.createElement('div');
+        wrap.style.cssText = 'position:relative; border-radius:8px; overflow:hidden; cursor:crosshair; box-shadow:0 1px 4px rgba(0,0,0,.15);';
+
+        const img = new Image();
+        img.style.cssText = 'display:block; width:100%; height:auto;';
+        img.alt = entry.fg_class;
+
+        const canvas = document.createElement('canvas');
+        canvas.style.cssText = 'position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;';
+
+        const badge = document.createElement('div');
+        badge.textContent = entry.fg_class;
+        badge.style.cssText = [
+          'position:absolute; bottom:8px; left:50%; transform:translateX(-50%);',
+          'background:rgba(0,0,0,.55); color:#fff; font-size:0.72rem; font-weight:600;',
+          'padding:2px 10px; border-radius:20px; text-transform:capitalize;',
+          'letter-spacing:.04em; white-space:nowrap; pointer-events:none;'
+        ].join('');
+
+        const allBoxes = [
+          ...entry.good_bboxes.map(b => ({ b, kind: 'good', alpha: 0 })),
+          ...entry.bad_bboxes.map(b => ({ b, kind: 'bad', alpha: 0 })),
+        ];
+
+        let mouse = null, raf = null;
+
+        function toImgCoords(e) {
+          const rect = wrap.getBoundingClientRect();
+          return {
+            x: (e.clientX - rect.left) * (img.naturalWidth / rect.width),
+            y: (e.clientY - rect.top) * (img.naturalHeight / rect.height),
+          };
+        }
+
+        function tick() {
+          const ctx = canvas.getContext('2d');
+          const lw = Math.max(1.5, img.naturalWidth / 220);
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+          let topGood = new Set(), topBad = new Set();
+          if (mouse) {
+            const rank = (arr) => arr
+              .map((s, i) => ({ i, d: dist2(mouse.x, mouse.y, s.b) }))
+              .sort((a, z) => a.d - z.d)
+              .slice(0, REVEAL_TOP_N)
+              .map(x => x.i);
+            const goodStates = allBoxes.filter(s => s.kind === 'good');
+            const badStates = allBoxes.filter(s => s.kind === 'bad');
+            rank(goodStates).forEach(i => topGood.add(goodStates[i]));
+            rank(badStates).forEach(i => topBad.add(badStates[i]));
+          }
+
+          let anyVisible = false;
+          for (const s of allBoxes) {
+            const target = (mouse && (topGood.has(s) || topBad.has(s))) ? 1 : 0;
+            s.alpha += (target - s.alpha) * (target > s.alpha ? LERP_IN : LERP_OUT);
+            if (s.alpha < 0.004) { s.alpha = 0; continue; }
+            anyVisible = true;
+            const [x1, y1, x2, y2] = s.b;
+            const a = s.alpha;
+            if (s.kind === 'good') {
+              ctx.strokeStyle = `rgba(35,209,96,${0.95 * a})`;
+              ctx.fillStyle = `rgba(35,209,96,${0.18 * a})`;
+            } else {
+              ctx.strokeStyle = `rgba(255,56,96,${0.90 * a})`;
+              ctx.fillStyle = `rgba(255,56,96,${0.13 * a})`;
+            }
+            ctx.lineWidth = lw;
+            ctx.fillRect(x1, y1, x2 - x1, y2 - y1);
+            ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+          }
+
+          if (mouse || anyVisible) raf = requestAnimationFrame(tick);
+          else raf = null;
+        }
+
+        function startLoop() { if (!raf) raf = requestAnimationFrame(tick); }
+
+        wrap.addEventListener('mousemove', (e) => {
+          if (!img.complete || !img.naturalWidth) return;
+          mouse = toImgCoords(e);
+          startLoop();
+        });
+        wrap.addEventListener('mouseleave', () => { mouse = null; startLoop(); });
+
+        img.src = IMG_BASE + entry.image_file;
+        wrap.appendChild(img);
+        wrap.appendChild(canvas);
+        wrap.appendChild(badge);
+        return wrap;
+      }
+
+      fetch(DATA_URL)
+        .then(r => r.json())
+        .then(entries => {
+          const grid = document.getElementById('dv-grid');
+          entries.forEach(e => grid.appendChild(makeCell(e)));
+        });
+    })();
+  </script>
+
+
   <!-- ══ METHOD ══════════════════════════════════════════════ -->
   <section class="section" style="background:#fafafa;">
     <div class="container is-max-desktop">
@@ -187,7 +435,7 @@
 
       <!-- Pipeline video — fills its natural aspect ratio, no black bars -->
       <video autoplay muted loop playsinline style="display:block; width:100%; height:auto; border-radius:6px;">
-        <source src="asset/pipeline.mp4" type="video/mp4" />
+        <source src="assets/pipeline.mp4" type="video/mp4" />
       </video>
 
 
@@ -227,7 +475,7 @@
 
       <!-- Example result: pizza spatial prior -->
       <div class="has-text-centered" style="margin-top:2rem;">
-        <img src="asset/pizza_compressed.gif" alt="Pizza spatial prior"
+        <img src="assets/pizza_compressed.gif" alt="Pizza spatial prior"
           style="width:100%; max-width:720px; height:auto; border-radius:6px;" />
         <p class="is-size-6 mt-3" style="color:#555;">
           <strong>Example spatial prior creation.</strong>
@@ -238,7 +486,7 @@
 
       <!-- Ranker figure -->
       <figure class="image" style="margin-top:2rem;">
-        <img src="asset/ranker_details.jpg" alt="Ranker comparison" style="border-radius:6px;" />
+        <img src="assets/ranker_details.jpg" alt="Ranker comparison" style="border-radius:6px;" />
       </figure>
       <p class="is-size-6 has-text-centered mt-2" style="color:#555;">
         <strong>Composite Overlay of Inpaintings..</strong> Multiple valid inpaintings are aggre-
@@ -251,6 +499,7 @@
 
 
 
+
   <!-- ══ RESULTS ══════════════════════════════════════════════ -->
   <section class="section" style="background:#fafafa;">
     <div class="container is-max-desktop">
@@ -260,7 +509,9 @@
       <h3 class="title is-4">Annotation Quality via Downstream Image Editing</h3>
       <div class="content">
         <p>
-          We evaluate via <strong>ImgEdit-Judge</strong> (Qwen2.5-VL, scale 1–5) across three axes:
+          We evaluate the annotations via inpainting conditioned on input bounding box through
+          <strong>ImgEdit-Judge</strong>
+          (Qwen2.5-VL, scale 1–5) across three axes:
           Prompt Compliance (PC), Visual Naturalness (VN), and Physical &amp; Detail Coherence (PDC).
         </p>
       </div>
@@ -362,12 +613,52 @@
         comparable in quality to random bounding box proposals.
       </p>
 
-      <!-- Placement model -->
-      <h3 class="title is-4" style="margin-top:2.5rem;">Distillation quality via Object Placement Benchmark</h3>
+      <!-- Qualitative results -->
+      <h3 class="title is-4" style="margin-top:2rem;">Qualitative Results</h3>
+      <figure class="image">
+        <img src="assets/fig_qualitative_eccv.png" alt="Qualitative results" style="width:100%; border-radius:6px;" />
+      </figure>
+      <p class="is-size-6 has-text-centered mt-2" style="color:#555;">
+        <strong>Qualitative comparison of annotation quality.</strong>
+        Our pipeline produces spatially coherent placements that respect scene geometry, while
+        baselines often place objects in implausible locations or fail to produce realistic composites.
+      </p>
+
+    </div>
+  </section>
+
+
+  <!-- ══ DISTILLATION ═════════════════════════════════════════ -->
+  <section class="section" style="background:#fafafa;">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3 has-text-centered">Distillation</h2>
       <div class="content">
         <p>
-          We distill our spatial priors into a lightweight DETR-style transformer and benchmark
-          against state-of-the-art VLMs and dedicated placement models on the HiddenObjects test set.
+          We distill our spatial priors into a lightweight transformer that predicts
+          ranked bounding boxes directly from a background image and a text category. The distilled model runs at
+          <strong>3.77 ms/image</strong>, a <strong>230,000×</strong> speedup over the full
+          pipeline, while preserving the quality of the learned priors.
+        </p>
+      </div>
+
+      <!-- Distilled model figure -->
+      <div style="margin-bottom:1.5rem;">
+        <img src="assets/distilled_model.png" alt="Distilled model architecture"
+          style="width:100%; height:auto; border-radius:6px;" />
+        <p class="is-size-6 has-text-centered mt-2" style="color:#555;">
+          <strong>Distilled model architecture.</strong>
+          A transformer encoder–decoder processes a background image and a CLIP text
+          embedding for the target category, and directly predicts a set of ranked bounding boxes
+          as the spatial prior.
+        </p>
+      </div>
+
+      <!-- Placement benchmark table -->
+      <h3 class="title is-4" style="margin-top:2rem;">Object Placement Benchmark</h3>
+      <div class="content">
+        <p>
+          We benchmark the distilled model against zero-shot VLMs and dedicated placement models
+          on the <span style="font-variant:small-caps;">HiddenObjects</span> test set.
         </p>
       </div>
 
@@ -487,9 +778,9 @@
         </table>
       </div>
       <p class="is-size-6 mt-1" style="color:#555;">
-        Our distilled model outperforms all baselines (<strong>56.6% vs. 2.9% mAP</strong>).
-        Inference runs at <strong>3.77 ms/image</strong> — a <strong>230,000×</strong> speedup
-        over the full pipeline.
+        Our distilled model outperforms all baselines by a large margin
+        (<strong>56.6% vs. 2.9% mAP</strong>), demonstrating that dense reward-weighted spatial
+        priors are essential for learning robust placement distributions.
       </p>
 
     </div>
@@ -499,12 +790,25 @@
 
 
 
+  <!-- ══ SLIDES ══════════════════════════════════════════════ -->
+  <section class="section" style="background:#fafafa;">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3 has-text-centered">Slides</h2>
+      <div class="publication-video">
+        <iframe
+          src="https://docs.google.com/presentation/d/1-Zpliixw_3iKWcp7jqSefjYcpwOHg2LQ2ZLXDzi8nBQ/embed?start=false&loop=false&delayms=3000"
+          frameborder="0" allowfullscreen></iframe>
+      </div>
+    </div>
+  </section>
+
+
   <!-- ══ BIBTEX ═══════════════════════════════════════════════ -->
   <section class="section" id="BibTeX" style="background:#fafafa;">
     <div class="container is-max-desktop content">
       <h2 class="title">BibTeX</h2>
       <pre><code>@inproceedings{schouten2026hiddenobjects,
-  title     = {Learning Explicit Spatial Priors for Object Placement from Diffusion Models},
+  title     = {HiddenObjects: Scalable Diffusion-Distilled Spatial Priors for Object Placement},
   author    = {Schouten, Marco and Siglidis, Ioannis and Belongie, Serge and Papadopoulos, Dim P.},
   booktitle = {arXiv},
   year      = {2026}
